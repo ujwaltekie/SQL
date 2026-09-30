@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 3 · Delete, LIKE, COUNT, ORDER BY, JOIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+pre .k{color:#e6a76a;font-weight:600}pre .s{color:#9cc9b4}pre .c{color:#8f8571}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.pair{grid-template-columns:1fr}}
+.pair h4{margin:0;font:600 12px Outfit;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.mini{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.frm label{font-size:12px;color:var(--mute);display:block}
+tr.hit td{background:rgba(63,107,92,.16);transition:.5s}
+tr.miss td{opacity:.38;transition:.5s}
+tr.chg td.c{background:rgba(184,86,47,.22)}
+tr.new td{background:rgba(63,107,92,.16)}
+td.nl{color:var(--acc);font-style:italic}
+.qb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qb .btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt{display:block;width:100%;text-align:left;margin-top:8px}
+.wd{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.wd span{border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;background:var(--bg);transition:.35s}
+.wd span.hit{background:rgba(63,107,92,.2);border-color:var(--ok)}
+.wd span.miss{opacity:.35}
+.wd span.id{font-family:ui-monospace,Menlo,monospace}
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;margin:8px 0;background:var(--bg);opacity:.5;transition:.4s}
+.step.on{opacity:1;border-color:var(--acc);background:rgba(184,86,47,.08);transform:translateX(6px)}
+.step b{font-family:Outfit;color:var(--acc);min-width:22px}
+tr.pick td{background:rgba(184,86,47,.2)}
+tr.sel{cursor:pointer}tr.sel:hover td{background:rgba(184,86,47,.1)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:10px 0}
+.sl label{font-size:13px;color:var(--mute)}
+td.cnt{background:rgba(63,107,92,.22);font-weight:600}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 3</span>
+  <h1>Clean up, search, sort and <em>combine</em></h1>
+  <p class="lead">Three ways to remove data, pattern-matching with LIKE, counting, ordering, paging, and finally joining two tables into one answer.</p>
+  <div class="chips"><a href="#s1">Delete / Truncate / Drop</a><a href="#s2">LIKE</a><a href="#s3">COUNT</a><a href="#s4">LIMIT &amp; ORDER BY</a><a href="#s5">JOIN</a><a href="#s6">Recap</a></div>
+</header>
+
+<section id="s1" class="rv">
+  <span class="num">01</span><h2>Delete, Truncate and Drop</h2>
+  <p>Quick recap: <code>DELETE FROM film WHERE film_id = 1;</code> removes the rows matching the condition, looping over the table and deleting each match. <b>Without WHERE, every row goes.</b> (There is one advanced form of DELETE that needs joins; we'll meet it after joins.)</p>
+  <p>Two more commands remove data, and they are very different:</p>
+  <pre class="sql">TRUNCATE film;      -- empty the table
+DROP TABLE film;    -- destroy the table itself</pre>
+  <div class="grid">
+    <div class="kd" style="margin:0"><h3>DELETE</h3>Removes rows <b>one by one</b>. Table structure stays. Slower. Doesn't reset the auto-increment id. <b>Can be rolled back</b> (before commit).</div>
+    <div class="kd" style="margin:0"><h3>TRUNCATE</h3>Drops the whole table and recreates it empty. Much faster. <b>Resets the id counter.</b> <b>Cannot be rolled back.</b></div>
+    <div class="kd" style="margin:0"><h3>DROP</h3>Removes rows <b>and</b> the table structure. Nothing is left; you must recreate it from scratch. <b>Cannot be rolled back.</b></div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> A register of 5 pages. <b>DELETE</b> = erasing entries with a pencil eraser, line by line (slow, but you kept a log so you can restore them). <b>TRUNCATE</b> = throwing the register away and buying an identical blank one whose page numbers restart at 1 (fast, no log of what was in the old one). <b>DROP</b> = burning the register <i>and</i> the printing plate, so no blank copy exists.</div>
+  <p><b>Why can't TRUNCATE be undone?</b> A rollback needs a log of what changed. DELETE records each removed row; TRUNCATE deletes the whole table as an intermediate step and keeps no such record. Rollbacks only work for transactions that haven't been committed yet; we'll study them properly in the Transactions class. Once something is committed, SQL has no "undo".</p>
+  <div class="card"><h3>🧨 Wipe lab</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 0">A table with 5 rows. Wipe it in different ways, then INSERT and ROLLBACK to see the differences.</p>
+    <div class="qb"><button class="btn" data-c="del">DELETE FROM t</button><button class="btn" data-c="tr">TRUNCATE t</button><button class="btn" data-c="dr">DROP TABLE t</button><button class="btn pri" data-c="ins">INSERT a row</button><button class="btn" data-c="rb">ROLLBACK</button><button class="btn" data-c="rs">Reset</button></div>
+    <div class="wd" id="wrows"></div>
+    <div class="res" id="wres">Pick a command…</div>
+  </div>
+  <div class="story"><small>Real story · Little Bobby Tables</small><p>The famous webcomic xkcd #327 imagines a mother who names her son with a piece of SQL that ends in <code>DROP TABLE Students</code>. When the school's software pastes the name into a query unchecked, the student records vanish. This trick is called <b>SQL injection</b>, and it's real; it's why serious systems never paste user text directly into queries, and why DROP is guarded so carefully.</p></div>
+  <div class="card" id="q1"></div>
+</section>
+
+<section id="s2" class="rv">
+  <span class="num">02</span><h2>LIKE: searching inside text</h2>
+  <p>Equality (<code>=</code>) needs an exact match. But when you type "love" in a search bar you expect every title <i>containing</i> it. That's <code>LIKE</code>, the pattern-matching operator for string columns.</p>
+  <pre class="sql">SELECT * FROM film WHERE title LIKE '%LOVE%';
+SELECT * FROM batches WHERE name LIKE '%Academy%';</pre>
+  <p>Patterns use two <b>wildcards</b>:</p>
+  <div class="rules">
+    <div><b>%</b> matches <i>any number</i> of characters, including none.</div>
+    <div><b>_</b> matches <i>exactly one</i> character, whichever it is.</div>
+  </div>
+  <p>So <code>'cat%'</code> means "starts with cat", <code>'%cat'</code> "ends with cat", <code>'%cat%'</code> "contains cat", <code>'_at'</code> "any one letter, then at", <code>'c%t'</code> "starts with c and ends with t". Type any pattern below.</p>
+  <div class="analogy"><b>Analogy:</b> % is a blank tile that can stand for any word length; _ is a Scrabble blank that stands for a single letter. Search suggestions (type "ca…" and see "cat", "car") are prefix patterns like <code>'ca%'</code>.</div>
+  <div class="card"><h3>🔎 Pattern lab</h3>
+    <div class="frm"><div><label>WHERE word LIKE …</label><input class="mini" id="lp" value="%cat%"></div></div>
+    <div class="qb" id="lpre"></div>
+    <div class="wd" id="lw"></div><div class="res" id="lres"></div>
+  </div>
+</section>
+
+<section id="s3" class="rv">
+  <span class="num">03</span><h2>COUNT: counting values, not rows</h2>
+  <p>An <b>aggregate function</b> takes many values and returns one. <code>COUNT(column)</code> returns how many values are in the column. You'd think that equals the row count, but <b>aggregates ignore NULLs</b>.</p>
+  <pre class="sql">SELECT COUNT(batch_id) FROM students;</pre>
+  <p>Try it on this table. Rows: 4. But one student has no batch:</p>
+  <div class="card"><div class="qb" id="cb"></div><div class="scroll"><table><tr><th>id</th><th>name</th><th>age</th><th>batch_id</th></tr><tbody id="ct"></tbody></table></div><div class="res" id="cres" style="margin-top:12px"></div></div>
+  <p><code>COUNT(batch_id)</code> is 3 because only three cells hold a value. <code>COUNT(*)</code> counts rows regardless, which is how you get the true number of rows.</p>
+  <div class="analogy"><b>Analogy:</b> Counting how many students submitted an assignment. A blank submission (NULL) isn't a submission, so it isn't counted even though the student is on the roll.</div>
+  <p>As a loop, COUNT is just a counter that only goes up for non-null values:</p>
+  <pre>count = 0
+for row in students:
+    if row.batch_id is not None:
+        count += 1
+print(count)</pre>
+  <p><b>Important consequence:</b> at the end of the loop only <code>count</code> survives; the individual rows are gone. So with an aggregate you can print only aggregate results. <code>SELECT COUNT(batch_id), batch_id FROM students;</code> is <b>invalid</b>: there is one count but many batch_ids, so what would the second column show?</p>
+  <div class="card" id="q3"></div>
+</section>
+
+<section id="s4" class="rv">
+  <span class="num">04</span><h2>LIMIT and ORDER BY</h2>
+  <h3 class="sub">ORDER BY: sorted output</h3>
+  <pre class="sql">SELECT * FROM film ORDER BY title;               -- A to Z (ascending, the default)
+SELECT * FROM film ORDER BY title DESC;          -- Z to A
+SELECT * FROM film ORDER BY title, release_year; -- title first, year breaks ties</pre>
+  <p>With several columns, the later ones are <b>tie-breakers</b>: the year only matters between rows with the same title. Each column can have its own direction. Remember Lecture 1: without ORDER BY, row order is <i>not guaranteed</i>. This is how you get guaranteed order.</p>
+  <div class="card"><h3>↕ Sort lab</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0"><label>title <select id="o1"><option value="">ASC</option><option value=" DESC">DESC</option></select></label><label>then release_year <select id="o2"><option value="">(none)</option><option value=",a">ASC</option><option value=",d">DESC</option></select></label></div>
+    <pre class="sql" id="osql"></pre><div class="scroll"><table><tr><th>title</th><th>release_year</th></tr><tbody id="ot"></tbody></table></div>
+  </div>
+  <h3 class="sub">LIMIT and OFFSET: taking a slice</h3>
+  <pre class="sql">SELECT * FROM film LIMIT 10;             -- first 10 rows
+SELECT * FROM film LIMIT 10 OFFSET 10;   -- 10 rows, starting from the 11th
+SELECT * FROM film ORDER BY title LIMIT 10;</pre>
+  <p><code>LIMIT n</code> caps the rows returned; <code>OFFSET m</code> skips the first m. In MySQL, <b>OFFSET can't be used without LIMIT</b>. Since LIMIT works on the final list, it comes <i>after</i> sorting: "the first 10 by title" really are the alphabetically first 10.</p>
+  <div class="analogy"><b>Analogy:</b> Google shows 10 results per page. Page 1 is <code>LIMIT 10</code>; page 2 is <code>LIMIT 10 OFFSET 10</code>; page N is <code>OFFSET (N-1)*10</code>. Every "load more" feed uses this idea.</div>
+  <div class="card"><h3>📄 Paging lab</h3>
+    <div class="sl"><div><label>LIMIT: <b id="lv"></b></label><input type="range" id="lr" min="1" max="12" value="4"></div><div><label>OFFSET: <b id="ov"></b></label><input type="range" id="or" min="0" max="11" value="0"></div></div>
+    <pre class="sql" id="lsql"></pre><div class="wd" id="lrows"></div><div class="res" id="lpg"></div>
+  </div>
+  <h3 class="sub">The order things really happen</h3>
+  <p>Think of the query as a pipeline. Press the button to step through it.</p>
+  <div class="card"><div id="pipe"><div class="step"><b>1</b><div><b style="font-family:inherit;color:inherit">FROM + WHERE</b><br>Loop over the rows and keep only those passing the condition.</div></div><div class="step"><b>2</b><div><b style="font-family:inherit;color:inherit">ORDER BY</b><br>Sort the kept rows. Every column is still available at this point.</div></div><div class="step"><b>3</b><div><b style="font-family:inherit;color:inherit">SELECT</b><br>Now pick the columns to output (and remove duplicates if DISTINCT).</div></div><div class="step"><b>4</b><div><b style="font-family:inherit;color:inherit">LIMIT / OFFSET</b><br>Slice the final list of rows.</div></div></div><button class="btn pri" id="pn">Next step ▶</button></div>
+  <p>Two rules fall out of this. <b>1)</b> Because sorting happens <i>before</i> column selection, you can sort by a column you don't display: <code>SELECT title FROM film ORDER BY release_year;</code> is valid. <b>2)</b> With <code>DISTINCT</code> it's different: after duplicates are removed you can only sort by selected columns.</p>
+  <pre class="sql">SELECT DISTINCT title FROM film ORDER BY release_year;  -- error
+SELECT DISTINCT title FROM film ORDER BY title;         -- fine</pre>
+  <p>Why? Suppose "ACE" exists for 2006 and 2012. DISTINCT collapses them into one "ACE" row, so which release_year should place it: 2006 or 2012? The answer would be ambiguous, so SQL refuses.</p>
+  <div class="card" id="q4"></div>
+</section>
+
+<section id="s5" class="rv">
+  <span class="num">05</span><h2>JOINs: stitching tables together</h2>
+  <p>So far every query used one table. But real questions span several. From Lecture 1, students and batches are separate tables, linked by <code>batch_id</code>. Now someone asks: <i>print each student's name with their batch name.</i> The names are in <code>students</code>; the batch names are in <code>batches</code>. No single table has both, so we need to <b>join</b> them.</p>
+  <p>A join stitches a row of one table to a row of another <b>where a join condition is true</b>. Here: the student's <code>batch_id</code> equals the batch's <code>batch_id</code>. Click a student to see the match, then run the join.</p>
+  <div class="card"><div class="two" style="grid-template-columns:1.4fr 1fr"><div class="scroll"><table><tr><th>student_id</th><th>first_name</th><th>batch_id</th></tr><tbody id="js"></tbody></table></div><div class="scroll"><table><tr><th>batch_id</th><th>batch_name</th></tr><tbody id="jb"></tbody></table></div></div>
+    <div class="res" id="jmsg" style="margin:12px 0">Click a student row…</div>
+    <button class="btn pri" id="jrun">Run JOIN</button> <button class="btn" id="jrst">Clear</button>
+    <div class="scroll" style="margin-top:12px"><table><tr><th>first_name</th><th>batch_name</th></tr><tbody id="jr"></tbody></table></div></div>
+  <pre class="sql">SELECT students.first_name, batches.batch_name
+FROM students
+JOIN batches
+ON students.batch_id = batches.batch_id;</pre>
+  <p>Line 1 chooses columns, prefixed with their table so it's clear where each comes from. <code>FROM students JOIN batches</code> says which two tables to combine. <code>ON</code> is the <b>join condition</b>: only rows satisfying it are stitched.</p>
+  <div class="analogy"><b>Analogy:</b> Your hall ticket lists an exam-centre code; a separate notice board maps each code to a centre name. To learn where you write your exam, you match your code against the board. A join does that for every student at once.</div>
+  <p>As a loop, imagine trying every student row against every batch row and keeping the pairs where the condition holds:</p>
+  <pre>for s in students:
+    for b in batches:
+        if s.batch_id == b.batch_id:
+            output(s.first_name, b.batch_name)</pre>
+  <p>(Databases do this far more cleverly, but the result is the same. Only rows with a match appear, so a student with no batch, or a batch with no students, is left out; we'll refine that in the next lectures.)</p>
+  <h3 class="sub">Sakila example, and aliases</h3>
+  <p>Every film with its language, first in full, then with <b>aliases</b>, short nicknames given with <code>AS</code> so you don't retype long table names:</p>
+  <div class="pair"><pre class="sql">SELECT film.title, language.name
+FROM film
+JOIN language
+ON film.language_id = language.language_id;</pre><pre class="sql">SELECT f.title, l.name
+FROM film AS f
+JOIN language AS l
+ON f.language_id = l.language_id;</pre></div>
+  <div class="card" id="q5"></div>
+</section>
+
+<section id="s6" class="rv">
+  <span class="num">06</span><h2>Quick recap</h2>
+  <div class="card"><ul style="margin:0;padding-left:20px">
+  <li>DELETE = rows, structure kept, can roll back. TRUNCATE = fast wipe, resets ids, no rollback. DROP = table gone, no rollback.</li>
+  <li><code>LIKE</code>: <code>%</code> = any length, <code>_</code> = one character.</li>
+  <li><code>COUNT(column)</code> skips NULLs; with an aggregate you can print only aggregate results.</li>
+  <li>ORDER BY sorts (later columns break ties); LIMIT/OFFSET slice the sorted result. Order: WHERE → ORDER BY → SELECT → LIMIT.</li>
+  <li>With DISTINCT, ORDER BY only by selected columns.</li>
+  <li>JOIN stitches rows of two tables using an <code>ON</code> condition; aliases shorten names.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Lecture 4 · Joins, part 2.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.05});
+$$('.rv').forEach(e=>io.observe(e));
+const KW='SELECT|FROM|WHERE|TRUNCATE|DROP TABLE|DELETE FROM|LIKE|COUNT|LIMIT|OFFSET|ORDER BY|DESC|DISTINCT|JOIN|ON|AS';
+const hl=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(new RegExp("('[^']*')|(--.*$)|\\b("+KW+")\\b",'gmi'),(m,a,c,k)=>a?`<span class="s">${a}</span>`:c?`<span class="c">${c}</span>`:`<span class="k">${k}</span>`);
+const paint=()=>$$('pre.sql').forEach(p=>{if(p.dataset.h!==p.textContent){p.innerHTML=hl(p.textContent);p.dataset.h=p.textContent}});
+function mk(el,items){el.innerHTML='<h3 style="margin-bottom:4px">Your turn: guess first</h3>';items.forEach(([q,o,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${q}</div>`+o.map((t,i)=>`<button class="btn opt" data-i="${i}">${t}</button>`).join('')+'<div class="fb"></div>';d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===a,f=d.querySelector('.fb');f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});el.appendChild(d)})}
+mk($('#q1'),[["A table's highest id is 10. You run TRUNCATE, then INSERT one row. Its id is…",["11","1","It errors"],1,"TRUNCATE recreates the table, so the counter restarts. After a DELETE it would have been 11."],["You must empty a huge scratch table quickly and will never need the data back. Best command?",["DELETE FROM t","TRUNCATE t","DROP TABLE t"],1,"TRUNCATE is fast and keeps the structure for reuse. DROP would remove the table you still want."]]);
+mk($('#q3'),[["<code>COUNT(age)</code> on the table above (ages 20 to 23, one NULL batch_id) returns…",["3","4","1"],1,"No age is NULL, so all four values count. Only batch_id had a NULL."],["Why is <code>SELECT COUNT(batch_id), batch_id FROM students</code> invalid?",["COUNT can't take a column","One count value can't sit beside many batch_id values","batch_id is NULL"],1,"After aggregating, the individual rows are gone; only the aggregate remains."]]);
+mk($('#q4'),[["Is <code>SELECT title FROM film ORDER BY release_year</code> valid?",["Yes, sorting happens before columns are picked","No, release_year isn't selected","Only with DISTINCT"],0,"Sorting happens on full rows first, then SELECT keeps the columns."],["<code>LIMIT 10 OFFSET 20</code> returns which rows?",["Rows 1 to 10","Rows 20 to 29","Rows 21 to 30"],2,"OFFSET 20 skips 20 rows, so we start at the 21st and take 10."]]);
+mk($('#q5'),[["Which part is the join condition?",["<code>FROM students JOIN batches</code>","<code>ON students.batch_id = batches.batch_id</code>","<code>SELECT students.first_name</code>"],1,"ON states what must be true for two rows to be stitched together."]]);
+// wipe lab
+let W;const wm=(t)=>$('#wres').innerHTML=t;
+function wd(){$('#wrows').innerHTML=W.ok?(W.rows.map(i=>`<span class="id hit">id ${i}</span>`).join('')||'<span>(empty table)</span>')+`<span class="miss" style="opacity:.8">next id: ${W.next}</span>`:'<span>💨 table t does not exist</span>'}
+function wr(m){W={rows:[1,2,3,4,5],next:6,ok:1,snap:null};wd();wm(m||'Pick a command…')}
+$$('[data-c]').forEach(b=>b.onclick=()=>{const c=b.dataset.c;
+ if(c==='rs')return wr();
+ if(c==='ins'){if(!W.ok){wm('<strong class="no">Error</strong><br>Table t doesn\'t exist. After DROP you must CREATE it again.');return}W.rows.push(W.next++);wd();wm('Inserted with id '+(W.next-1)+'.');return}
+ if(c==='rb'){if(W.snap){W.rows=W.snap;W.snap=null;wd();wm('<strong class="ok">Rolled back ✓</strong><br>DELETE kept a log, so the rows are back.')}else wm('<strong class="no">Nothing to roll back</strong><br>TRUNCATE and DROP keep no log, and a committed DELETE is final too.');return}
+ if(c==='del'){W.snap=[...W.rows];W.rows=[];wd();wm('<strong>DELETE</strong>: rows removed one by one, structure kept. Note the next id still continues (no reset). Try ROLLBACK.')}
+ if(c==='tr'){W.rows=[];W.next=1;W.snap=null;wd();wm('<strong>TRUNCATE</strong>: table recreated empty, id counter reset to 1. Try ROLLBACK: it won\'t work.')}
+ if(c==='dr'){W.rows=[];W.ok=0;W.snap=null;wd();wm('<strong class="no">DROP</strong>: rows and structure are gone. Try INSERT.')}});
+wr();
+// LIKE
+const WORDS=['cat','caterpillar','category','wildcat','domesticcat','cattle','dog','bat','hat','cot','cut','chat','chart','connect','cult'];
+function lk(){const p=$('#lp').value;let re;try{re=new RegExp('^'+p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/%/g,'.*').replace(/_/g,'.')+'$','i')}catch(e){return}
+ let n=0;$('#lw').innerHTML=WORDS.map(w=>{const h=re.test(w);n+=h;return`<span class="${h?'hit':'miss'}">${w}</span>`}).join('');$('#lres').innerHTML=`<code>LIKE '${p}'</code> matches <strong>${n}</strong> of ${WORDS.length} words.`}
+['cat%','%cat','%cat%','_at','c_t','c%t'].forEach(p=>{const b=document.createElement('button');b.className='btn';b.textContent="'"+p+"'";b.onclick=()=>{$('#lp').value=p;lk()};$('#lpre').appendChild(b)});$('#lp').oninput=lk;lk();
+// COUNT
+const S=[[1,'A',20,1],[2,'B',21,1],[3,'C',22,null],[4,'D',23,2]];
+function cn(k){$$('#cb .btn').forEach((b,i)=>b.classList.toggle('on',i===k));const n=k===2?4:S.filter(r=>r[k===0?3:2]!==null).length;
+ $('#ct').innerHTML=S.map(r=>'<tr>'+r.map((v,i)=>`<td class="${(k===2||i===(k===0?3:2))&&v!==null?'cnt':''} ${v===null?'nl':''}">${v===null?'NULL':v}</td>`).join('')+'</tr>').join('');
+ $('#cres').innerHTML=`<strong>${['COUNT(batch_id)','COUNT(age)','COUNT(*)'][k]} = ${n}</strong><br>${k===0?'The NULL is skipped.':k===1?'No NULLs in age, so 4.':'Counts rows, whatever their values.'}`}
+['COUNT(batch_id)','COUNT(age)','COUNT(*)'].forEach((t,i)=>{const b=document.createElement('button');b.className='btn';b.textContent=t;b.onclick=()=>cn(i);$('#cb').appendChild(b)});cn(0);
+// ORDER BY
+const O=[['ACADEMY',2006],['ACE',2012],['ACE',2006],['BLADE',2010],['BLADE',2004],['CAT',2008]];
+function od(){const d=$('#o1').value?-1:1,s=$('#o2').value;const r=[...O].sort((a,b)=>a[0]<b[0]?-d:a[0]>b[0]?d:s?(s===',a'?1:-1)*(a[1]-b[1]):0);
+ $('#osql').textContent='SELECT title, release_year FROM film\nORDER BY title'+$('#o1').value+(s?', release_year'+(s===',d'?' DESC':''):'')+';';
+ $('#ot').innerHTML=r.map((x,i)=>`<tr class="${r.some((y,j)=>j!==i&&y[0]===x[0])?'pick':''}"><td>${x[0]}</td><td>${x[1]}</td></tr>`).join('');paint()}
+$('#o1').onchange=$('#o2').onchange=od;od();
+// LIMIT
+function lm(){const l=+$('#lr').value,o=+$('#or').value;$('#lv').textContent=l;$('#ov').textContent=o;
+ $('#lsql').textContent=`SELECT * FROM film\nORDER BY title\nLIMIT ${l}${o?' OFFSET '+o:''};`;
+ $('#lrows').innerHTML=Array.from({length:12},(_,i)=>`<span class="id ${i>=o&&i<o+l?'hit':'miss'}">row ${i+1}</span>`).join('');
+ const got=Math.max(0,Math.min(l,12-o));$('#lpg').innerHTML=`Returns <strong>${got}</strong> row${got===1?'':'s'}`+(o%l===0?` — that's <strong>page ${o/l+1}</strong> with ${l} per page.`:' (offset isn\'t a multiple of the page size, so this isn\'t a clean page).');paint()}
+$('#lr').oninput=$('#or').oninput=lm;lm();
+// pipeline
+let ps=-1;$('#pn').onclick=()=>{ps=(ps+1)%4;$$('#pipe .step').forEach((s,i)=>s.classList.toggle('on',i===ps));$('#pn').textContent=ps===3?'Restart ↺':'Next step ▶'};
+// join
+const ST=[[1,'John',1],[2,'Jane',1],[3,'Jim',2],[4,'Jenny',3],[5,'Jack',2]],BT=[[1,'Batch A'],[2,'Batch B'],[3,'Batch C']];
+function jd(sel){$('#js').innerHTML=ST.map(r=>`<tr class="sel ${sel===r[0]?'pick':''}" data-i="${r[0]}">${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('');
+ const s=ST.find(r=>r[0]===sel);$('#jb').innerHTML=BT.map(r=>`<tr class="${s&&s[2]===r[0]?'pick':''}">${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('');
+ if(s){const b=BT.find(r=>r[0]===s[2]);$('#jmsg').innerHTML=`${s[1]} has batch_id <strong>${s[2]}</strong> → matches the batches row with batch_id ${s[2]} → <strong>${s[1]} + ${b[1]}</strong>`}
+ $$('#js tr').forEach(t=>t.onclick=()=>jd(+t.dataset.i))}
+jd(0);
+$('#jrun').onclick=()=>{$('#jr').innerHTML='';ST.forEach((s,i)=>setTimeout(()=>{$('#jr').insertAdjacentHTML('beforeend',`<tr class="new"><td>${s[1]}</td><td>${BT.find(b=>b[0]===s[2])[1]}</td></tr>`)},i*350))};
+$('#jrst').onclick=()=>{$('#jr').innerHTML='';jd(0);$('#jmsg').textContent='Click a student row…'};
+paint();
+</script>
+</body>
+</html>
