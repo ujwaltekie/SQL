@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 6 · Inner, Left, Right &amp; Full Joins</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+pre .k{color:#e6a76a;font-weight:600}pre .s{color:#9cc9b4}pre .c{color:#8f8571}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.pair{grid-template-columns:1fr}}
+.pair h4{margin:0;font:600 12px Outfit;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.mini{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.frm label{font-size:12px;color:var(--mute);display:block}
+tr.hit td{background:rgba(63,107,92,.16);transition:.5s}
+tr.miss td{opacity:.38;transition:.5s}
+tr.chg td.c{background:rgba(184,86,47,.22)}
+tr.new td{background:rgba(63,107,92,.16)}
+td.nl{color:var(--acc);font-style:italic}
+.qb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qb .btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt{display:block;width:100%;text-align:left;margin-top:8px}
+.wd{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.wd span{border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;background:var(--bg);transition:.35s}
+.wd span.hit{background:rgba(63,107,92,.2);border-color:var(--ok)}
+.wd span.miss{opacity:.35}
+.wd span.id{font-family:ui-monospace,Menlo,monospace}
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;margin:8px 0;background:var(--bg);opacity:.5;transition:.4s}
+.step.on{opacity:1;border-color:var(--acc);background:rgba(184,86,47,.08);transform:translateX(6px)}
+.step b{font-family:Outfit;color:var(--acc);min-width:22px}
+tr.pick td{background:rgba(184,86,47,.2)}
+tr.sel{cursor:pointer}tr.sel:hover td{background:rgba(184,86,47,.1)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:10px 0}
+.sl label{font-size:13px;color:var(--mute)}
+td.cnt{background:rgba(63,107,92,.22);font-weight:600}
+.venn{display:flex;align-items:center;justify-content:center;gap:0;margin:16px 0}
+.venn svg circle{transition:.4s;fill-opacity:.55}
+.jtabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.jtabs .btn.on{background:var(--acc2);border-color:var(--acc2);color:#fff}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.m1 td{background:rgba(63,107,92,.22)}
+tr.m2 td{background:rgba(184,86,47,.16)}
+tr.dim td{opacity:.3}
+.arrowrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute);margin:4px 0;flex-wrap:wrap}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.count-badge{font:600 12px Outfit;background:var(--acc);color:#fff;padding:3px 9px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.4}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.38}
+tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+td.chk{position:relative}
+td.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:rgba(184,86,47,.45)}100%{background:transparent}}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.tagpending{color:var(--mute)}
+.res-row{opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.caption{font-size:15px;background:var(--bg2);border-left:4px solid var(--acc);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.caption b{font-family:Outfit}
+.caption .ico{font-size:18px;line-height:1.3}
+.joinbox{display:flex;gap:0;align-items:stretch;margin:14px 0;overflow-x:auto;border-radius:14px}
+.jtable{flex:1 1 260px;min-width:230px}
+.jtable table{width:100%;font-size:13.5px;border-collapse:collapse}
+.jtable-head{font:700 11px Outfit;letter-spacing:.09em;text-transform:uppercase;padding:8px 12px;color:#fff}
+.jtable.left .jtable-head{background:var(--acc2);border-radius:12px 0 0 0}
+.jtable.right .jtable-head{background:var(--acc);border-radius:0 12px 0 0}
+.jtable td,.jtable th{border:1px solid var(--line);padding:6px 8px}
+.jtable.left table{border-radius:0 0 0 12px;overflow:hidden}
+.jtable.right table{border-radius:0 0 12px 0;overflow:hidden}
+.jlink{flex:0 0 78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 6px;color:var(--mute);font-size:11px;text-align:center;background:var(--bg2)}
+.jlink b{color:var(--acc);font-family:Outfit;font-size:22px}
+.jlink code{font-size:10.5px;background:var(--card);padding:3px 5px;border-radius:6px;word-break:break-word}
+.jtable.left tr.current td{box-shadow:inset 0 0 0 2px var(--acc2)}
+.jtable.right tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+.cheat{width:100%;border-collapse:collapse;font-size:14.5px;margin:14px 0}
+.cheat th,.cheat td{border:1px solid var(--line);padding:10px 12px;text-align:center}
+.cheat th{font-family:Outfit;background:var(--bg2)}
+.cheat td:first-child,.cheat th:first-child{text-align:left;font-family:Outfit;font-weight:600}
+.cheat .y{color:var(--ok)}.cheat .n{color:var(--bad)}
+.progress{height:6px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:var(--acc);transition:.3s;width:0}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 6</span>
+  <h1>Inner, Left, Right and <em>Full</em> Joins</h1>
+  <p class="lead">Four ways to combine two tables, and exactly which rows survive each one. Every example uses one easy, visual story: students and the school clubs they've joined.</p>
+  <div class="chips"><a href="#s0">Cheat sheet</a><a href="#s2">Inner Join</a><a href="#s3">Left Join</a><a href="#s4">Right Join</a><a href="#s5">Full Outer Join</a><a href="#s1">Joining 3+ tables</a><a href="#s6">ON vs WHERE</a><a href="#s7">Bonus</a></div>
+</header>
+
+<section id="s0" class="rv">
+  <span class="num">01</span><h2>The four joins, at a glance</h2>
+  <p>Every join here works on the same idea: try to pair a row from the left table with a row from the right table wherever the <code>ON</code> condition holds true. The four types only differ in <b>what happens to a row that finds no partner</b>. Keep this cheat sheet in mind; every section below walks through exactly one row of it, step by step.</p>
+  <div class="scroll"><table class="cheat">
+    <tr><th>Join type</th><th>Matched rows</th><th>Unmatched left row</th><th>Unmatched right row</th></tr>
+    <tr><td>INNER JOIN</td><td class="y">kept</td><td class="n">dropped</td><td class="n">dropped</td></tr>
+    <tr><td>LEFT JOIN</td><td class="y">kept</td><td class="y">kept, right side NULL</td><td class="n">dropped</td></tr>
+    <tr><td>RIGHT JOIN</td><td class="y">kept</td><td class="n">dropped</td><td class="y">kept, left side NULL</td></tr>
+    <tr><td>FULL OUTER JOIN</td><td class="y">kept</td><td class="y">kept, right side NULL</td><td class="y">kept, left side NULL</td></tr>
+  </table></div>
+  <p>Here's our running example for the rest of this page: a school has a few <b>clubs</b>, and each <b>student</b> may or may not have joined one.</p>
+  <div class="joinbox" style="max-width:560px">
+    <div class="jtable left"><div class="jtable-head">Left · students</div><div class="scroll"><table><thead><tr><th>id</th><th>name</th><th>club_id</th></tr></thead><tbody>
+      <tr><td>1</td><td>Aarav</td><td>1</td></tr><tr><td>2</td><td>Meera</td><td>1</td></tr><tr><td>3</td><td>Kabir</td><td class="nl">NULL</td></tr><tr><td>4</td><td>Zoya</td><td class="nl">NULL</td></tr><tr><td>5</td><td>Dev</td><td>2</td></tr></tbody></table></div></div>
+    <div class="jlink"><b>⇄</b><span>ON</span><code>s.club_id&nbsp;=<br>c.id</code></div>
+    <div class="jtable right"><div class="jtable-head">Right · clubs</div><div class="scroll"><table><thead><tr><th>id</th><th>name</th></tr></thead><tbody>
+      <tr><td>1</td><td>Music Club</td></tr><tr><td>2</td><td>Drama Club</td></tr><tr><td>3</td><td>Robotics Club</td></tr></tbody></table></div></div>
+  </div>
+  <p>Notice on purpose: <b>Kabir and Zoya</b> haven't joined any club, and <b>Robotics Club</b> currently has no members. These two "gaps" are exactly what separates the four join types. Recall from Lecture 2: <code>NULL</code> never equals anything, so a NULL <code>club_id</code> can never satisfy a join condition on its own.</p>
+</section>
+
+<section id="s2" class="rv">
+  <div class="jhead"><span class="pill">1 of 4</span><h2 style="margin:0">Inner Join</h2></div>
+  <p><code>JOIN</code> by itself already means <b>INNER JOIN</b>; the word <code>INNER</code> is optional. It keeps <b>only the rows where a match is found on both sides</b>. Everything else, matched or not, is thrown away entirely.</p>
+  <pre class="sql">SELECT s.name, c.name
+FROM students s
+JOIN clubs c
+ON s.club_id = c.id;</pre>
+  <div class="analogy"><b>Analogy:</b> A raffle where only ticket numbers that were actually drawn get called out. If your ticket wasn't drawn, or a drawn number belongs to no one, neither appears on stage at all.</div>
+  <div class="card" id="V_inn"></div>
+</section>
+
+<section id="s3" class="rv">
+  <div class="jhead"><span class="pill">2 of 4</span><h2 style="margin:0">Left Join</h2></div>
+  <p><code>LEFT JOIN</code> keeps <b>every row from the left table</b> (the one named right after <code>FROM</code>), whether or not it finds a match. When there's no match, the columns coming from the right table are simply filled with <code>NULL</code>.</p>
+  <pre class="sql">SELECT s.name, c.name
+FROM students s
+LEFT JOIN clubs c
+ON s.club_id = c.id;</pre>
+  <div class="analogy"><b>Analogy:</b> A class attendance register. Every student's name is printed no matter what, and next to it either their club, or a blank if they haven't joined one. Nobody gets left off the register.</div>
+  <div class="card" id="V_lft"></div>
+</section>
+
+<section id="s4" class="rv">
+  <div class="jhead"><span class="pill">3 of 4</span><h2 style="margin:0">Right Join</h2></div>
+  <p><code>RIGHT JOIN</code> is the mirror image: it keeps <b>every row from the right table</b>, filling in <code>NULL</code> on the left side wherever nothing matches.</p>
+  <pre class="sql">SELECT s.name, c.name
+FROM students s
+RIGHT JOIN clubs c
+ON s.club_id = c.id;</pre>
+  <div class="analogy"><b>Analogy:</b> A list of every club a school offers, printed for the notice board, with member names filled in where they exist. A club with zero members still gets listed, just with a blank next to it.</div>
+  <div class="card" id="V_rgt"></div>
+</section>
+
+<section id="s5" class="rv">
+  <div class="jhead"><span class="pill">4 of 4</span><h2 style="margin:0">Full Outer Join</h2></div>
+  <p><code>FULL OUTER JOIN</code> keeps <b>every row from both tables</b>. Matched rows are combined as usual; anything unmatched on either side still appears, with <code>NULL</code> filling whichever side is missing.</p>
+  <pre class="sql">SELECT s.name, c.name
+FROM students s
+FULL OUTER JOIN clubs c
+ON s.club_id = c.id;</pre>
+  <div class="analogy"><b>Analogy:</b> A combined guest list made by merging "people who RSVP'd" and "people who were invited", so that gatecrashers <i>and</i> no-shows both show up somewhere on the final sheet.</div>
+  <div class="card" id="V_ful"></div>
+  <div class="card" id="q3"></div>
+</section>
+
+<section id="s1" class="rv">
+  <span class="num">02</span><h2>Joining more than two tables</h2>
+  <p>Till now every join combined two tables. But real questions often need three or more. If you had to add three numbers, you'd add the first two, then add the third to that sum. Joining tables works the same way: join the first pair, then join <i>that result</i> with the next table.</p>
+  <p>Task: for every film, print its title, its language's name, and its <b>original</b> language's name. The <code>film</code> table links to <code>language</code> twice: once via <code>language_id</code>, once via <code>original_language_id</code>. So the same table is joined in twice, with two different aliases so we can tell the two lookups apart.</p>
+  <pre class="sql">SELECT f.title, l1.name, l2.name
+FROM film f
+JOIN language l1
+  ON f.language_id = l1.language_id
+JOIN language l2
+  ON f.original_language_id = l2.language_id;</pre>
+  <pre>step1 = []                                 # film joined with language (l1)
+for f in film:
+    for l1 in language:
+        if f.language_id == l1.id:
+            step1.append(f + l1)
+
+step2 = []                                 # step1 joined with language again (l2)
+for row in step1:
+    for l2 in language:
+        if row.original_language_id == l2.id:
+            step2.append(row + l2)</pre>
+  <div class="analogy"><b>Analogy:</b> Looking up a word's meaning in a dictionary, then looking up a difficult word <i>inside</i> that meaning in the very same dictionary. Same dictionary, used twice, for two different purposes — hence two aliases, <code>l1</code> and <code>l2</code>.</div>
+</section>
+
+<section id="s6" class="rv">
+  <span class="num">03</span><h2>ON vs WHERE: not the same thing</h2>
+  <p>Both <code>ON</code> and <code>WHERE</code> look like they "filter", so why not just write everything in WHERE?</p>
+  <pre class="sql">SELECT * FROM A JOIN B ON A.id = B.id;
+-- versus
+SELECT * FROM A, B WHERE A.id = B.id;</pre>
+  <p>The second form is secretly a <b>CROSS JOIN</b>: <code>FROM A, B</code> first builds <i>every possible pairing</i> of a row from A with a row from B (that's <code>n × m</code> rows), and only afterwards does WHERE throw away the pairs that don't match. With <code>ON</code>, the condition is applied <i>while</i> the pairing is being built, so non-matching pairs are never created at all.</p>
+  <div class="card"><h3>⚖️ Intermediate-table size lab</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 0">A (3 rows) and B (3 rows), matching on id. Compare what each approach builds internally.</p>
+    <div class="qb"><button class="btn on" data-m="on">JOIN … ON</button><button class="btn" data-m="where">FROM A,B … WHERE</button></div>
+    <div class="stat" id="cjstat"></div>
+    <div class="scroll"><table id="cjt"></table></div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Inviting people to a party. ON is checking each guest's invite <i>at the door</i>, so uninvited people never enter the venue. WHERE is letting everyone in first and only then walking around asking people to leave, using a bigger venue and more staff for no reason.</div>
+  <div class="rules">
+    <div><b>Space:</b> ON keeps the intermediate result small; WHERE (via cross join) always builds the full <code>n×m</code> first.</div>
+    <div><b>Speed:</b> fewer intermediate rows means less work later, so ON is generally faster.</div>
+    <div><b>Rule of thumb:</b> write your join condition in ON. Reserve WHERE for filtering the joined result on things unrelated to how the tables connect (e.g. <code>WHERE c.name = 'Music Club'</code> after the join). Avoid a bare CROSS JOIN unless you deliberately want every pairing.</div>
+  </div>
+</section>
+
+<section id="s7" class="rv">
+  <span class="num">04 · Bonus</span><h2>Compound Joins (a step further)</h2>
+  <p>Everything above joined tables on a single equality, like <code>s.club_id = c.id</code>. Two more advanced ideas worth knowing, for when you're ready:</p>
+  <div class="rules">
+    <div><b>1. A join condition doesn't need to be an equality.</b> ON can use <code>&gt;</code>, <code>BETWEEN</code>, or any comparison.</div>
+    <div><b>2. ON can hold multiple ANDed conditions</b>, exactly like WHERE. A join with more than one condition across columns is called a <b>compound join</b>.</div>
+  </div>
+  <p>Example: for every film, list other films released within 2 years of it that cost <i>more</i> to rent than it does.</p>
+  <pre class="sql">SELECT f1.title, f2.title
+FROM film f1
+JOIN film f2
+  ON f2.release_year BETWEEN f1.release_year - 2 AND f1.release_year + 2
+  AND f2.rental_rate > f1.rental_rate;</pre>
+  <p>This is still just a join: ON decides which pairs of rows get stitched together. It's simply checking a range and an inequality together, instead of a single <code>=</code>.</p>
+</section>
+
+<section id="s8" class="rv">
+  <span class="num">05</span><h2>Quick recap</h2>
+  <div class="card"><ul style="margin:0;padding-left:20px">
+  <li><b>INNER JOIN</b> (the default): only matched rows survive.</li>
+  <li><b>LEFT JOIN</b>: every left-table row survives; unmatched right side becomes NULL.</li>
+  <li><b>RIGHT JOIN</b>: every right-table row survives; unmatched left side becomes NULL.</li>
+  <li><b>FULL OUTER JOIN</b>: every row from both sides survives, matched or not.</li>
+  <li>Join more than two tables by chaining ON clauses, one join at a time.</li>
+  <li>ON filters while the joined rows are being built (small, fast); a comma-join with WHERE builds every pairing first (a cross join, big, slow). Put join logic in ON.</li>
+  <li><b>Bonus:</b> ON can use non-equality conditions and multiple ANDed conditions — a compound join.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Subqueries — nesting one query inside another.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.05});
+$$('.rv').forEach(e=>io.observe(e));
+const KW='SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|FULL OUTER JOIN|CROSS JOIN|ON|AS|BETWEEN|AND';
+const hl=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(new RegExp("('[^']*')|(--.*$)|\\b("+KW+")\\b",'gmi'),(m,a,c,k)=>a?`<span class="s">${a}</span>`:c?`<span class="c">${c}</span>`:`<span class="k">${k}</span>`);
+const paint=()=>$$('pre.sql').forEach(p=>{if(p.dataset.h!==p.textContent){p.innerHTML=hl(p.textContent);p.dataset.h=p.textContent}});
+function mk(el,items){el.innerHTML='<h3 style="margin-bottom:4px">Your turn: guess first</h3>';items.forEach(([q,o,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${q}</div>`+o.map((t,i)=>`<button class="btn opt" data-i="${i}">${t}</button>`).join('')+'<div class="fb"></div>';d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===a,f=d.querySelector('.fb');f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});el.appendChild(d)})}
+mk($('#q3'),[["Kabir has no club (<code>club_id</code> is NULL). Which joins still print a row for him?",["Only INNER JOIN","INNER and RIGHT JOIN","LEFT JOIN and FULL OUTER JOIN"],2,"LEFT and FULL always keep every row from students, the left table, matched or not."],["Which join(s) could print Robotics Club with no student next to it?",["INNER JOIN","LEFT JOIN","RIGHT JOIN or FULL OUTER JOIN"],2,"RIGHT keeps every clubs row; FULL keeps everything from both sides."]]);
+
+// ---- Step-by-step join visualizer ----
+const CLUBS=[[1,'Music Club'],[2,'Drama Club'],[3,'Robotics Club']];
+const STUD=[[1,'Aarav',1],[2,'Meera',1],[3,'Kabir',null],[4,'Zoya',null],[5,'Dev',2]];
+
+function makeViz(sfx,type,label){
+  const box=$('#V_'+sfx);
+  box.innerHTML=`<h3>🔬 Step-by-step visualizer</h3>
+  <p style="color:var(--mute);font-size:14.5px;margin:6px 0 12px">The <b style="color:var(--acc2)">LEFT table</b> (students, the one right after FROM) sits on the left; the <b style="color:var(--acc)">RIGHT table</b> (clubs, the one after JOIN) sits on the right. Watch it scan every student against every club, exactly like the nested loop — the currently-compared pair is outlined.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><button class="btn pri" data-step>Step ▶</button><button class="btn" data-run>▶▶ Run all</button><button class="btn" data-reset>Reset</button></div>
+  <div class="progress"><i></i></div>
+  <div class="caption"><span class="ico">👉</span><span data-cap></span></div>
+  <div class="joinbox">
+    <div class="jtable left"><div class="jtable-head">Left · students</div><div class="scroll"><table><thead><tr><th>id</th><th>name</th><th>club_id</th><th>status</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="jlink"><b>⇄</b><span>ON</span><code>s.club_id&nbsp;=<br>c.id</code></div>
+    <div class="jtable right"><div class="jtable-head">Right · clubs</div><div class="scroll"><table><thead><tr><th>id</th><th>name</th><th>status</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+  <div class="stat" data-stat></div>
+  <p style="font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:14px 0 4px">↓ result being built</p>
+  <div class="scroll"><table><thead><tr><th>name</th><th>club</th></tr></thead><tbody data-out></tbody></table></div>`;
+
+  const [ltb,rtb]=box.querySelectorAll('tbody');
+  const outTb=box.querySelector('[data-out]');
+  const caption=box.querySelector('[data-cap]');
+  const bar=box.querySelector('.progress i');
+  const statBox=box.querySelector('[data-stat]');
+
+  let li,ri,phase,leftStatus,rightStatus,matchedThisRow,out,totalSteps,stepNo,timer;
+
+  function init(){
+    li=0;ri=0;phase='scan';
+    leftStatus=STUD.map(()=>'pending');
+    rightStatus=CLUBS.map(()=>'pending');
+    matchedThisRow=false;out=[];stepNo=0;
+    totalSteps=STUD.length*CLUBS.length + ((type==='right'||type==='full')?CLUBS.length:0) + 1;
+    clearInterval(timer);
+    caption.innerHTML='Press <b>Step</b> to begin the scan, student by student.';
+    draw();
+  }
+
+  function draw(){
+    ltb.innerHTML=STUD.map((s,i)=>{
+      const cur=phase==='scan'&&i===li;
+      const cls=leftStatus[i]==='matched'?'ok':leftStatus[i]==='padded'?'pad':leftStatus[i]==='excluded'?'excl':'';
+      const tag=leftStatus[i]==='matched'?'<span class="tagok">✅ matched</span>':leftStatus[i]==='padded'?'<span class="tagpad">⚪ NULL-padded</span>':leftStatus[i]==='excluded'?'<span class="tagexcl">❌ excluded</span>':'<span class="tagpending">… checking</span>';
+      return `<tr class="${cls} ${cur?'current':''}"><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]===null?'<span class="nl">NULL</span>':s[2]}</td><td>${tag}</td></tr>`;
+    }).join('');
+    rtb.innerHTML=CLUBS.map((c,j)=>{
+      const cur=(phase==='scan'&&j===ri&&li<STUD.length)||(phase==='remainder'&&j===ri);
+      const cls=rightStatus[j]==='matched'?'ok':rightStatus[j]==='padded'?'pad':rightStatus[j]==='excluded'?'excl':'';
+      const tag=rightStatus[j]==='matched'?'<span class="tagok">✅ matched</span>':rightStatus[j]==='padded'?'<span class="tagpad">⚪ NULL-padded</span>':rightStatus[j]==='excluded'?'<span class="tagexcl">❌ excluded</span>':'<span class="tagpending">… waiting</span>';
+      return `<tr class="${cls} ${cur?'current':''}"><td>${c[0]}</td><td>${c[1]}</td><td>${tag}</td></tr>`;
+    }).join('');
+    outTb.innerHTML=out.map(r=>`<tr class="res-row"><td>${r[0]??'<span class="nl">NULL</span>'}</td><td>${r[1]??'<span class="nl">NULL</span>'}</td></tr>`).join('');
+    bar.style.width=Math.min(100,100*stepNo/totalSteps)+'%';
+    const keptL=leftStatus.filter(s=>s!=='excluded').length, keptR=rightStatus.filter(s=>s!=='excluded').length;
+    statBox.innerHTML=`<div><b>${out.length}</b><span>output rows so far</span></div><div><b>${keptL}/${STUD.length}</b><span>students kept</span></div><div><b>${keptR}/${CLUBS.length}</b><span>clubs kept</span></div>`;
+  }
+
+  function step(){
+    stepNo++;
+    if(phase==='scan'){
+      if(li>=STUD.length){
+        if(type==='right'||type==='full'){phase='remainder';ri=0;step_remainder_start();return true}
+        phase='done';caption.innerHTML='<b>Done.</b> Every student has been checked against every club.';draw();return false;
+      }
+      const s=STUD[li];
+      if(ri>=CLUBS.length){
+        if(!matchedThisRow){
+          if(type==='left'||type==='full'){leftStatus[li]='padded';out.push([s[1],null]);caption.innerHTML=`<b>${s[1]}</b> matched no club. This is a <b>${label}</b>, so they're kept anyway with club = NULL.`;}
+          else{leftStatus[li]='excluded';caption.innerHTML=`<b>${s[1]}</b> matched no club. This is a <b>${label}</b>, so they're dropped from the result.`;}
+        } else {
+          caption.innerHTML=`Finished checking <b>${s[1]}</b> against every club.`;
+        }
+        li++;ri=0;matchedThisRow=false;draw();return true;
+      }
+      const c=CLUBS[ri];
+      const isMatch=s[2]===c[0];
+      if(isMatch){leftStatus[li]='matched';rightStatus[ri]='matched';matchedThisRow=true;out.push([s[1],c[1]]);caption.innerHTML=`Comparing <b>${s[1]}</b> (club_id=${s[2]}) with <b>${c[1]}</b> (id=${c[0]}) → <span class="tagok">MATCH ✅</span> — row added to the result.`;}
+      else{caption.innerHTML=`Comparing <b>${s[1]}</b> (club_id=${s[2]===null?'NULL':s[2]}) with <b>${c[1]}</b> (id=${c[0]}) → no match.`;}
+      ri++;draw();return true;
+    }
+    if(phase==='remainder'){
+      if(ri>=CLUBS.length){phase='done';caption.innerHTML='<b>Done.</b> Every unmatched club has also been added.';draw();return false}
+      const c=CLUBS[ri];
+      if(rightStatus[ri]!=='matched'){rightStatus[ri]='padded';out.push([null,c[1]]);caption.innerHTML=`<b>${c[1]}</b> had no student. This is a <b>${label}</b>, so it's kept anyway with student = NULL.`;}
+      else{caption.innerHTML=`<b>${c[1]}</b> was already matched earlier — nothing more to add.`;}
+      ri++;draw();return true;
+    }
+    return false;
+  }
+  function step_remainder_start(){caption.innerHTML=`Now sweeping any <b>clubs</b> that never got matched, since a <b>${label}</b> keeps every club too.`;draw();}
+
+  box.querySelector('[data-step]').onclick=()=>step();
+  box.querySelector('[data-run]').onclick=()=>{clearInterval(timer);timer=setInterval(()=>{if(!step())clearInterval(timer)},420)};
+  box.querySelector('[data-reset]').onclick=init;
+  init();
+}
+makeViz('inn','inner','INNER JOIN');
+makeViz('lft','left','LEFT JOIN');
+makeViz('rgt','right','RIGHT JOIN');
+makeViz('ful','full','FULL OUTER JOIN');
+
+// ON vs WHERE lab
+function cj(mode){const A=[[1,'a1'],[2,'a2'],[3,'a3']],B=[[1,'b1'],[2,'b2'],[4,'b4']];const rows=[];A.forEach(a=>B.forEach(b=>rows.push([a,b,a[0]===b[0]])));
+ const show=mode==='on'?rows.filter(r=>r[2]):rows;
+ $('#cjstat').innerHTML=`<div><b>${mode==='on'?rows.filter(r=>r[2]).length:9}</b><span>rows ${mode==='on'?'ever created':'in cross join'}</span></div><div><b>${rows.filter(r=>r[2]).length}</b><span>final rows printed</span></div>`;
+ $('#cjt').innerHTML='<tr><th>A.id</th><th>B.id</th><th>kept?</th></tr>'+show.map(r=>`<tr class="${r[2]?'ok':'excl'}"><td>${r[0][0]}</td><td>${r[1][0]}</td><td>${r[2]?'✓ match':'✗ discarded at print time'}</td></tr>`).join('')}
+$$('[data-m]').forEach(b=>b.onclick=()=>{$$('[data-m]').forEach(x=>x.classList.remove('on'));b.classList.add('on');cj(b.dataset.m)});
+cj('on');
+paint();
+</script>
+</body>
+</html>
