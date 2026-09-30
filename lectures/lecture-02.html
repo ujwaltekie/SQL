@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 2 · CRUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+pre .k{color:#e6a76a;font-weight:600}pre .s{color:#9cc9b4}pre .c{color:#8f8571}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.pair{grid-template-columns:1fr}}
+.pair h4{margin:0;font:600 12px Outfit;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.mini{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.frm label{font-size:12px;color:var(--mute);display:block}
+tr.hit td{background:rgba(63,107,92,.16);transition:.5s}
+tr.miss td{opacity:.38;transition:.5s}
+tr.chg td.c{background:rgba(184,86,47,.22)}
+tr.new td{background:rgba(63,107,92,.16)}
+td.nl{color:var(--acc);font-style:italic}
+.qb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qb .btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt{display:block;width:100%;text-align:left;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 2</span>
+  <h1>Create, Read, Update, <em>Delete</em></h1>
+  <p class="lead">Your first real SQL. Four operations run almost every app you have ever used. Read a little, then run it yourself right here.</p>
+  <div class="chips"><a href="#s1">CRUD</a><a href="#s2">Create</a><a href="#s3">Read</a><a href="#s4">WHERE</a><a href="#s5">Update &amp; Delete</a><a href="#s6">Recap</a></div>
+</header>
+
+<section id="s1" class="rv">
+  <span class="num">01</span><h2>What is CRUD?</h2>
+  <p>Whatever entity a table stores (students, films, orders), only four things can ever be done to its entries. Together they are called <b>CRUD</b>. Tap each card.</p>
+  <div class="grid">
+    <button class="flip"><h3>C · Create</h3><span class="hint">tap</span><div class="b">Add a new entry. SQL: <code>INSERT</code>. Example: posting a new photo, signing up for an app.</div></button>
+    <button class="flip"><h3>R · Read</h3><span class="hint">tap</span><div class="b">Fetch existing entries. SQL: <code>SELECT</code>. Example: scrolling your feed, searching a product. The most common operation by far.</div></button>
+    <button class="flip"><h3>U · Update</h3><span class="hint">tap</span><div class="b">Change an entry that already exists. SQL: <code>UPDATE</code>. Example: editing a caption or your profile phone number.</div></button>
+    <button class="flip"><h3>D · Delete</h3><span class="hint">tap</span><div class="b">Remove an entry. SQL: <code>DELETE</code>. Example: deleting a comment or closing an account.</div></button>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Think of a notebook of contacts. Writing a new contact is Create, flipping to find one is Read, correcting a number is Update, and tearing out a page is Delete. SQL just says these things to a database in a precise language.</div>
+  <h3 class="sub">Our practice database: Sakila</h3>
+  <p><b>Sakila</b> is the official MySQL sample database. It models an old-style <b>DVD rental store</b>: tables for <code>film</code>, <code>actor</code>, <code>customer</code>, <code>staff</code>, <code>store</code>, <code>rental</code>, <code>payment</code> and more. It supports everything such a business does: renting films, tracking inventory, storing customers and staff. We'll use it for most of the course.</p>
+  <div class="story"><small>Real story · Why rental stores?</small><p>Blockbuster ran thousands of such stores. In 2000, Netflix's founders reportedly offered to sell the company to Blockbuster for about $50 million, and Blockbuster passed. A decade later Blockbuster was bankrupt. Both businesses run on the same kind of data: customers, films, rentals, payments, and CRUD on all of it.</p></div>
+</section>
+
+<section id="s2" class="rv">
+  <span class="num">02</span><h2>Create: tables and INSERT</h2>
+  <p><b>SQL</b> (Structured Query Language) is the language used to talk to relational databases: creating tables, fetching and changing data, managing permissions. "Structured" because it works on data arranged in a fixed structure: tables.</p>
+  <h3 class="sub">Step 1: CREATE TABLE, the blueprint</h3>
+  <p>Before any row exists, we describe the table: its <b>columns</b>, each column's <b>data type</b>, and its <b>constraints</b>.</p>
+  <pre class="sql">CREATE TABLE students (
+    id INT AUTO_INCREMENT,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    dateOfBirth DATE NOT NULL,
+    enrollmentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    marks DECIMAL(5, 2) CHECK (marks BETWEEN 0.00 AND 100.00),
+    batchId INT,
+    isActive BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (id)
+);</pre>
+  <div class="analogy"><b>Analogy:</b> This is designing a paper admission form <i>before</i> printing it: which boxes exist, what may be written in each, which are compulsory. Every student then fills in a copy.</div>
+  <div class="rules">
+    <div><b>Data type</b> says what kind of value a column holds: <code>INT</code> whole numbers, <code>VARCHAR(50)</code> text up to 50 characters, <code>DATE</code>, <code>TIMESTAMP</code> (date and time), <code>DECIMAL</code> numbers with decimals, <code>BOOLEAN</code> true/false. (See the attached video on SQL data types for the full list.)</div>
+    <div><b>NOT NULL</b>: the column can't be empty. Leave it out while inserting and you get an error.</div>
+    <div><b>UNIQUE</b>: no two rows may share this value. An insert or update that would create a duplicate fails.</div>
+    <div><b>DEFAULT</b>: the value used when you don't supply one. <code>enrollmentDate</code> becomes the moment of insertion.</div>
+    <div><b>CHECK</b>: a custom rule. Here marks must lie between 0 and 100 or the query fails.</div>
+    <div><b>AUTO_INCREMENT + PRIMARY KEY</b>: <code>id</code> is filled automatically (1, 2, 3, ...) and identifies each row, exactly the primary key idea from Lecture 1.</div>
+  </div>
+  <div class="card"><h3>🧪 Constraint lab: try to break the rules</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 0">Insert a student into the table above. The email <code>naman@scaler.com</code> is already taken.</p>
+    <div class="frm"><div><label>firstName (NOT NULL)</label><input class="mini" id="f1" value="Riya"></div><div><label>email (UNIQUE)</label><input class="mini" id="f2" value="riya@scaler.com"></div><div><label>marks (0 to 100)</label><input class="mini" id="f3" value="88"></div></div>
+    <button class="btn pri" id="ins">INSERT</button>
+    <div class="res" id="cres" style="margin-top:12px">Press INSERT…</div>
+    <div class="scroll" style="margin-top:12px"><table><tr><th>id</th><th>firstName</th><th>email</th><th>marks</th><th>enrollmentDate</th><th>isActive</th></tr><tbody id="ct"></tbody></table></div>
+  </div>
+  <h3 class="sub">Step 2: INSERT, adding rows</h3>
+  <pre class="sql">INSERT INTO film (title, description, release_year, language_id, rental_duration, rental_rate, length, replacement_cost, rating, special_features)
+VALUES ('The Dark Knight', 'Batman fights the Joker', 2008, 1, 3, 4.99, 152, 19.99, 'PG-13', 'Trailers'),
+       ('The Dark Knight Rises', 'Batman fights Bane', 2012, 1, 3, 4.99, 165, 19.99, 'PG-13', 'Trailers');</pre>
+  <p><code>INSERT INTO</code> names the table and, in brackets, the columns we are filling. <code>VALUES</code> then lists the data, matched to the columns <b>by position</b>: first value to first column, and so on. Several rows can go in one statement, separated by commas, which is faster than many single inserts.</p>
+  <h3 class="sub">Leaving out the column names</h3>
+  <p>The column list is optional. Without it, values go into the table's columns in their defined order, so you must supply <i>every</i> column:</p>
+  <pre class="sql">INSERT INTO film
+VALUES (default, 'The Dark Knight', 'Batman fights the Joker', 2008, 1, NULL, 3, 4.99, 152, 19.99, 'PG-13', 'Trailers', default);</pre>
+  <p><code>NULL</code> means "no value" and <code>default</code> means "use the column's default" (for auto-increment <code>film_id</code>, the next number). It works, but it is <b>bad practice</b>: you must remember the exact column order, one slip puts data in the wrong column, you must fill columns you'd rather skip, and adding a column later breaks the query. <b>Always name your columns.</b></p>
+  <div class="card" id="q1"></div>
+</section>
+
+<section id="s3" class="rv">
+  <span class="num">03</span><h2>Read: the SELECT statement</h2>
+  <p><code>SELECT</code> reads data. Its simplest forms:</p>
+  <pre class="sql">SELECT * FROM film;
+SELECT title, description, release_year FROM film;</pre>
+  <p><code>*</code> means "every column"; naming columns (comma-separated) returns just those. Keywords and column names are case-insensitive, so <code>SELECT TITLE FROM film</code> is identical. On huge tables, prefer naming columns: fetching only what you need is faster.</p>
+  <div class="analogy"><b>Analogy:</b> A spreadsheet where you hide columns you don't need. <code>*</code> is "show all", listing columns is "show only these".</div>
+  <h3 class="sub">Thinking in loops</h3>
+  <p>Every SQL query can be pictured as a plain loop over rows. From here on we'll pair each query with pseudocode; the tabs below cover the ideas in this lecture.</p>
+  <div class="card"><div class="tabs" id="tabs"></div><div class="pair"><div><h4>SQL</h4><pre class="sql" id="tsql"></pre></div><div><h4>Same idea as a loop</h4><pre id="tpy"></pre></div></div><p id="tnote" style="color:var(--mute);font-size:14.5px;margin:0"></p></div>
+  <h3 class="sub">DISTINCT: removing duplicates</h3>
+  <pre class="sql">SELECT DISTINCT rating FROM film;
+SELECT DISTINCT rating, release_year FROM film;</pre>
+  <p>With one column, you get each value once. With several, uniqueness applies to the <b>combination</b>: <code>(PG, 2006)</code> and <code>(PG, 2008)</code> are different pairs, so both stay, while a second <code>(PG, 2006)</code> is dropped.</p>
+  <div class="analogy"><b>Analogy:</b> A café's menu lists each flavour once, no matter how many scoops were sold. DISTINCT turns a long sales log into that menu.</div>
+  <div class="card" id="q4"></div>
+  <h3 class="sub">Constants and calculations</h3>
+  <pre class="sql">SELECT 'Hello World';
+SELECT title, 'Hello World' FROM film;
+SELECT title, length/60 FROM film;
+SELECT title, ROUND(length/60) FROM film;</pre>
+  <p>SELECT isn't only for stored columns. A constant needs no <code>FROM</code> at all, and next to real columns it repeats on every row. You can also compute on columns: <code>length</code> is in minutes, so <code>length/60</code> gives hours, and <code>ROUND()</code> (one of many built-in functions we'll meet later) rounds it. The table itself is never changed; only the output is.</p>
+  <h3 class="sub">INSERT ... SELECT: copying between tables</h3>
+  <pre class="sql">INSERT INTO film_copy (title, description, release_year, rating)
+SELECT title, description, release_year, rating
+FROM film;</pre>
+  <p>Instead of typing values, the rows come from a SELECT. The selected columns line up <b>by position</b> with the column list. Think of it as photocopying chosen columns of one register into another.</p>
+</section>
+
+<section id="s4" class="rv">
+  <span class="num">04</span><h2>WHERE: choosing which rows</h2>
+  <p>Rarely do we want <i>all</i> rows. <code>WHERE</code> keeps only rows meeting a condition, and it always comes after <code>FROM</code>.</p>
+  <pre class="sql">SELECT * FROM film WHERE rating = 'PG-13';</pre>
+  <p>In loop terms, WHERE is just the <code>if</code> inside the loop (see the WHERE tab above). And like <code>if</code>, it combines conditions.</p>
+  <h3 class="sub">AND, OR, NOT</h3>
+  <pre class="sql">SELECT * FROM film WHERE rating = 'PG-13' AND release_year = 2006;  -- both
+SELECT * FROM film WHERE rating = 'PG-13' OR release_year = 2006;   -- either
+SELECT * FROM film WHERE NOT rating = 'PG-13';                      -- opposite</pre>
+  <p><b>AND</b> needs every condition true (strict), <b>OR</b> needs at least one (generous), <b>NOT</b> flips the result. Mixing them needs care: <b>AND is evaluated before OR</b>, like multiplication before addition in maths.</p>
+  <pre class="sql">rating = 'PG-13' OR release_year = 2006 AND rental_rate = 0.99
+-- means: rating = 'PG-13' OR (release_year = 2006 AND rental_rate = 0.99)</pre>
+  <p>Use parentheses whenever you mix them, so the meaning is obvious to readers and to you. Run both versions in the lab below and compare.</p>
+  <div class="card" id="q3"></div>
+  <h3 class="sub">Comparison operators</h3>
+  <p>Besides <code>=</code>, use <code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code> and <code>!=</code>. MySQL also accepts <code>&lt;&gt;</code> for "not equal": <code>rating &lt;&gt; 'PG-13'</code>.</p>
+  <h3 class="sub">IN and BETWEEN</h3>
+  <pre class="sql">SELECT * FROM film WHERE rating IN ('PG-13', 'R');
+SELECT * FROM film WHERE rating NOT IN ('PG-13', 'R');
+SELECT * FROM film WHERE length BETWEEN 100 AND 160;</pre>
+  <p><code>IN</code> compares a column with a whole list. It is a tidy replacement for a chain of ORs, and <code>NOT IN</code> reverses it. <code>BETWEEN a AND b</code> checks a range, and <b>both ends are included</b>.</p>
+  <h3 class="sub">NULL: the tricky one</h3>
+  <p><code>NULL</code> means "no value / unknown". It is <b>not</b> zero and not an empty string. Because it is unknown, any comparison with it is unknown too:</p>
+  <pre class="sql">SELECT NULL = NULL;   -- NULL
+SELECT 3 = NULL;      -- NULL
+SELECT 3 &lt;&gt; NULL;     -- NULL (not true!)</pre>
+  <p>WHERE keeps only rows where the condition is <b>true</b>, so <code>WHERE description = NULL</code> returns nothing, always. Use <code>IS NULL</code> / <code>IS NOT NULL</code>.</p>
+  <div class="analogy"><b>Analogy:</b> Two exam answer sheets, both left blank. Are the answers "equal"? You can't say; neither answer exists. That's why NULL is not equal to NULL.</div>
+  <p><b>The hidden trap:</b> <code>WHERE id != 2</code> silently skips customers whose id is NULL. If you want everyone except 2, including NULLs, say so: <code>WHERE id IS NULL OR id != 2</code>. Many assignment answers go wrong exactly here.</p>
+  <div class="card" id="q2"></div>
+  <div class="card"><h3>▶ Query lab: run to check</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 0">Pick a query. Every row is tested like in the loop: green rows match, faded rows don't.</p>
+    <div class="qb" id="qb"></div>
+    <pre class="sql" id="qsql">Choose a query…</pre>
+    <div class="res" id="qres">Results appear here.</div>
+    <div class="scroll" style="margin-top:12px"><table><tr><th>film_id</th><th>title</th><th>year</th><th>rating</th><th>rate</th><th>length</th><th>description</th></tr><tbody id="qt"></tbody></table></div>
+  </div>
+</section>
+
+<section id="s5" class="rv">
+  <span class="num">05</span><h2>Update and Delete</h2>
+  <pre class="sql">UPDATE film SET release_year = 2006, rating = 'PG' WHERE film_id = 1;
+DELETE FROM film WHERE film_id = 1;</pre>
+  <p><code>UPDATE</code> changes the listed columns (<code>SET</code>) on every row matching the WHERE. <code>DELETE FROM</code> removes every row matching the WHERE. Both are simply the loop with an action inside the <code>if</code>: change the row, or remove it.</p>
+  <p><b>The big danger: forgetting WHERE.</b> The condition is what narrows the action. Leave it out and the action applies to <b>every row</b>: all 1,000 films get the same year, or the whole table is emptied.</p>
+  <div class="analogy"><b>Analogy:</b> "Find and Replace" in a document. With a selection it changes only that part; with nothing selected and "Replace All" pressed, it rewrites everything. Always write the WHERE first, and preview it with a SELECT.</div>
+  <div class="card"><h3>💥 Danger lab</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0">
+      <select id="dm"><option value="u">UPDATE</option><option value="d">DELETE</option></select>
+      <label><input type="checkbox" id="dw" checked> include WHERE film_id = 3</label>
+      <button class="btn pri" id="drun">Run</button><button class="btn" id="drst">Reset</button></div>
+    <pre class="sql" id="dsql"></pre>
+    <div class="res" id="dres">Toggle WHERE, then run.</div>
+    <div class="scroll" style="margin-top:12px"><table><tr><th>film_id</th><th>title</th><th>release_year</th><th>rating</th></tr><tbody id="dt"></tbody></table></div>
+  </div>
+</section>
+
+<section id="s6" class="rv">
+  <span class="num">06</span><h2>Quick recap</h2>
+  <div class="card recap"><ul style="margin:0;padding-left:20px">
+  <li>CRUD = <code>INSERT</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+  <li><code>CREATE TABLE</code> defines columns, types and constraints (NOT NULL, UNIQUE, DEFAULT, CHECK). Always name columns in INSERT.</li>
+  <li>SELECT picks columns, DISTINCT removes duplicate rows, expressions compute new values, WHERE filters rows.</li>
+  <li>AND before OR, so use parentheses. IN for lists, BETWEEN is inclusive, and NULL needs <code>IS NULL</code>.</li>
+  <li>UPDATE and DELETE without WHERE hit every row.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Lecture 3 · CRUD-2 and Joins.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.05});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+document.querySelectorAll('.flip').forEach(f=>f.onclick=()=>f.classList.toggle('open'));
+const KW='SELECT|FROM|WHERE|INSERT INTO|VALUES|UPDATE|SET|DELETE FROM|CREATE TABLE|DISTINCT|AND|OR|NOT NULL|NOT|IN|BETWEEN|IS|NULL|default|DEFAULT|UNIQUE|CHECK|PRIMARY KEY|AUTO_INCREMENT|INT|VARCHAR|DATE|TIMESTAMP|DECIMAL|BOOLEAN|ROUND|CURRENT_TIMESTAMP|TRUE';
+const hl=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(new RegExp("('[^']*')|(--.*$)|\\b("+KW+")\\b",'gmi'),(m,a,c,k)=>a?`<span class="s">${a}</span>`:c?`<span class="c">${c}</span>`:`<span class="k">${k}</span>`);
+const paint=()=>document.querySelectorAll('pre.sql').forEach(p=>{if(p.dataset.h!==p.textContent){p.innerHTML=hl(p.textContent);p.dataset.h=p.textContent}});
+function mk(el,items){el.innerHTML='<h3 style="margin-bottom:4px">Your turn: guess first</h3>';items.forEach(([q,o,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${q}</div>`+o.map((t,i)=>`<button class="btn opt" data-i="${i}">${t}</button>`).join('')+'<div class="fb"></div>';d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===a;const f=d.querySelector('.fb');f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});el.appendChild(d)})}
+mk($('#q1'),[["You run <code>INSERT INTO film VALUES ('The Dark Knight', 'Batman fights the Joker', ...)</code> with no column list. What goes wrong?",["Nothing, MySQL matches values by meaning","'The Dark Knight' is placed in <code>film_id</code>, the first column","It automatically fills <code>title</code> first"],1,"Values go by position, and film_id is defined first. Named columns prevent this."]]);
+mk($('#q4'),[["A table has rows (PG, 2006), (PG, 2006), (PG, 2008). How many rows does <code>SELECT DISTINCT rating, release_year</code> return?",["3","2","1"],1,"The pairs (PG, 2006) and (PG, 2008) are the two unique combinations."]]);
+mk($('#q3'),[["In <code>WHERE a OR b AND c</code>, which part is evaluated first?",["<code>a OR b</code>","<code>b AND c</code>","Left to right, no priority"],1,"AND binds tighter than OR, so it means <code>a OR (b AND c)</code>."]]);
+mk($('#q2'),[["<code>SELECT * FROM film WHERE description = NULL;</code> returns…",["Films with no description","No rows at all","An error"],1,"= NULL evaluates to NULL, never true. Use IS NULL."]]);
+// constraint lab
+const CT=[];const used=new Set(['naman@scaler.com']);
+$('#ins').onclick=()=>{const n=$('#f1').value.trim(),e=$('#f2').value.trim(),m=$('#f3').value.trim(),r=$('#cres');let err='';
+ if(!n)err='NOT NULL violated: firstName cannot be empty.';else if(!e)err='NOT NULL violated: email is required.';else if(used.has(e))err='UNIQUE violated: this email already exists.';else if(m!==''&&(isNaN(m)||+m<0||+m>100))err='CHECK failed: marks must be between 0 and 100.';
+ if(err){r.innerHTML='<strong class="no">Error</strong><br>'+err+' Nothing was inserted.';return}
+ used.add(e);CT.push([CT.length+1,n,e,m===''?'NULL':m,new Date().toISOString().slice(0,19).replace('T',' '),'TRUE']);
+ r.innerHTML='<strong class="ok">1 row inserted ✓</strong><br><code>id</code> auto-incremented, <code>enrollmentDate</code> and <code>isActive</code> took their DEFAULTs.';
+ $('#ct').innerHTML=CT.map(x=>'<tr class="new">'+x.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('')};
+// tabs
+const T={DISTINCT:["SELECT DISTINCT rating, release_year\nFROM film;","answer = set()\nfor row in film:\n    answer.add((row.rating, row.release_year))\nreturn answer","Pick the columns for every row, then a set drops repeats."],
+WHERE:["SELECT * FROM film\nWHERE rating = 'PG-13';","answer = []\nfor row in film:\n    if row.rating == 'PG-13':\n        answer.append(row)\nreturn answer","WHERE is the if-condition inside the loop."],
+UPDATE:["UPDATE film\nSET release_year = 2006\nWHERE film_id = 1;","for row in film:\n    if row.film_id == 1:\n        row.release_year = 2006","Same loop, but the action changes the row."],
+DELETE:["DELETE FROM film\nWHERE film_id = 1;","for row in film:\n    if row.film_id == 1:\n        delete(row)","Same loop again, removing the row. No if means every row is deleted."]};
+Object.keys(T).forEach((k,i)=>{const b=document.createElement('button');b.className='btn tab';b.textContent=k;b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#tsql').textContent=T[k][0];$('#tpy').textContent=T[k][1];$('#tnote').textContent=T[k][2];paint()};$('#tabs').appendChild(b);if(!i)b.click()});
+// query lab
+const F=[[1,'ACADEMY DINOSAUR',2006,'PG',.99,86,'An epic drama'],[2,'ACE GOLDFINGER',2006,'G',4.99,48,'An astounding epistle'],[3,'THE DARK KNIGHT',2008,'PG-13',4.99,152,'Batman fights the Joker'],[4,'DARK KNIGHT RISES',2012,'PG-13',4.99,165,null],[5,'DARK KNIGHT RETURNS',2016,'R',4.99,152,null],[6,'AGENT TRUMAN',2006,'PG',2.99,169,'A foul panorama'],[7,'ALABAMA DEVIL',2006,'PG-13',.99,114,'A thoughtful panorama'],[8,'ADAPTATION HOLES',2006,'NC-17',2.99,50,null]];
+const P=[["rating = 'PG-13'",r=>r[3]==='PG-13'],["rating = 'PG-13' AND release_year = 2006",r=>r[3]==='PG-13'&&r[2]===2006],["rating = 'PG-13' OR release_year = 2006",r=>r[3]==='PG-13'||r[2]===2006],["NOT rating = 'PG-13'",r=>r[3]!=='PG-13'],
+["rating = 'PG-13' OR release_year = 2006 AND rental_rate = 0.99",r=>r[3]==='PG-13'||(r[2]===2006&&r[4]===.99),"AND ran first, so this is the same as putting brackets around the AND part."],
+["(rating = 'PG-13' OR release_year = 2006) AND rental_rate = 0.99",r=>(r[3]==='PG-13'||r[2]===2006)&&r[4]===.99,"Brackets changed the meaning: same words, fewer rows."],
+["rating IN ('PG-13', 'R')",r=>['PG-13','R'].includes(r[3])],["rating NOT IN ('PG-13', 'R')",r=>!['PG-13','R'].includes(r[3])],["length BETWEEN 100 AND 160",r=>r[5]>=100&&r[5]<=160,"BETWEEN includes both ends."],
+["description = NULL",()=>false,"Comparing with = NULL is never true, so nothing matches."],["description IS NULL",r=>r[6]===null],["description IS NOT NULL",r=>r[6]!==null]];
+const cell=v=>v===null?'<td class="nl">NULL</td>':`<td>${v}</td>`;
+P.forEach((p,i)=>{const b=document.createElement('button');b.className='btn';b.textContent=p[0].length>34?p[0].slice(0,32)+'…':p[0];b.onclick=()=>{document.querySelectorAll('#qb .btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#qsql').textContent="SELECT * FROM film\nWHERE "+p[0]+";";const h=F.filter(p[1]);$('#qres').innerHTML=`<strong>${h.length} of ${F.length} rows</strong>${p[2]?'<br>'+p[2]:''}`;$('#qt').innerHTML=F.map(r=>`<tr class="${p[1](r)?'hit':'miss'}">${r.map(cell).join('')}</tr>`).join('');paint()};$('#qb').appendChild(b)});
+// danger lab
+let D;const dq=()=>{$('#dsql').textContent=($('#dm').value==='u'?"UPDATE film SET release_year = 2006":"DELETE FROM film")+($('#dw').checked?"\nWHERE film_id = 3;":";");paint()};
+function dr(msg){D=F.map(r=>({id:r[0],t:r[1],y:r[2],g:r[3],c:0}));draw(msg||'Toggle WHERE, then run.')}
+function draw(m){$('#dres').innerHTML=m;$('#dt').innerHTML=D.map(r=>`<tr class="${r.c?'chg':''}"><td>${r.id}</td><td>${r.t}</td><td class="c">${r.y}</td><td>${r.g}</td></tr>`).join('')||'<tr><td colspan=4>Empty table 😬</td></tr>'}
+$('#dm').onchange=$('#dw').onchange=dq;$('#drst').onclick=()=>dr();
+$('#drun').onclick=()=>{const w=$('#dw').checked,m=D.filter(r=>!w||r.id===3);
+ if($('#dm').value==='u'){m.forEach(r=>{r.y=2006;r.c=1});draw(`<strong class="${w?'ok':'no'}">${m.length} row${m.length>1?'s':''} matched</strong><br>${w?'Only film 3 changed.':'No WHERE: every film now says 2006!'}`)}
+ else{D=D.filter(r=>!m.includes(r));draw(`<strong class="${w?'ok':'no'}">${m.length} row${m.length>1?'s':''} deleted</strong><br>${w?'Only film 3 is gone.':'No WHERE: the whole table is empty.'}`)}};
+dq();dr();paint();
+</script>
+</body>
+</html>
