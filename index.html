@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Course · Lectures & Assignments</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 28px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips span{font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card)}
+.chips b{font-family:Outfit;color:var(--acc)}
+.search{width:100%;margin-top:34px;font:inherit;padding:12px 18px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+.search:focus{outline:2px solid var(--acc);outline-offset:2px}
+.lec{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.lec.soon{opacity:.6;box-shadow:none;border-style:dashed}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+.lec h2{font-size:clamp(22px,4vw,28px);font-weight:600;margin:6px 0 8px}
+.lec p{margin:0 0 16px;color:var(--mute)}
+.btn{display:inline-block;font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;text-decoration:none;transition:.2s}
+.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.asg{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.asg small{display:block;font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.asg div{display:flex;flex-wrap:wrap;gap:8px}
+.empty{text-align:center;color:var(--mute);padding:40px 0}
+footer{margin-top:48px;text-align:center;color:var(--mute);font-size:14px}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.tt .btn{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+  <header class="hero">
+    <span class="tag">SQL · Course Hub</span>
+    <h1>Read the lecture. Then <em>prove</em> it.</h1>
+    <p class="lead">Every lecture has an interactive cheat sheet and a set of assignments. Pick a lecture to begin.</p>
+    <div class="chips" id="stats"></div>
+    <input class="search" id="q" type="search" placeholder="Search lectures or assignments…" aria-label="Search">
+  </header>
+  <div id="list"></div>
+  <footer>Add new lectures by editing <code>catalog.js</code></footer>
+</main>
+
+<script src="catalog.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L=CATALOG.lectures;
+const live=L.filter(l=>!l.soon);
+const totalA=live.reduce((n,l)=>n+l.assignments.length,0);
+$('#stats').innerHTML=`<span><b>${live.length}</b> lectures</span><span><b>${totalA}</b> assignments</span>`+(L.length>live.length?`<span><b>${L.length-live.length}</b> coming soon</span>`:'');
+
+function render(filter=''){
+  const f=filter.trim().toLowerCase();
+  const html=L.map((l,i)=>{
+    const n=String(i+1).padStart(2,'0');
+    const hay=(l.title+' '+l.blurb+' '+l.assignments.join(' ')).toLowerCase();
+    if(f&&!hay.includes(f))return'';
+    if(l.soon)return`<article class="lec soon"><span class="num">LECTURE ${n}</span><h2>${esc(l.title)}</h2><p>Coming soon.</p></article>`;
+    const as=l.assignments.map((t,j)=>`<a class="btn" href="assignments/${l.id}/assignment-${j+1}.html">${j+1}. ${esc(t)}</a>`).join('');
+    return`<article class="lec"><span class="num">LECTURE ${n}</span><h2>${esc(l.title)}</h2><p>${esc(l.blurb)}</p>
+      <a class="btn pri" href="lectures/${l.id}.html">Open cheat sheet →</a>
+      ${as?`<div class="asg"><small>Assignments</small><div>${as}</div></div>`:''}</article>`;
+  }).join('');
+  $('#list').innerHTML=html||'<p class="empty">Nothing matches that search.</p>';
+}
+render();
+$('#q').oninput=e=>render(e.target.value);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const cur=r.dataset.theme||(d?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'};
+</script>
+</body>
+</html>
