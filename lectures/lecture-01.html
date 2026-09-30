@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 1 · Databases & Keys</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 1</span>
+  <h1>Where does data <em>live</em>, and how do we trust it?</h1>
+  <p class="lead">From messy spreadsheets to relational databases, and the keys that keep every row identifiable. Click, guess, and experiment as you read.</p>
+  <div class="chips"><a href="#s1">Why databases</a><a href="#s2">Relational model</a><a href="#s3">Keys</a><a href="#s4">Foreign keys</a><a href="#s5">Recap</a></div>
+</header>
+
+<section id="s1" class="rv">
+  <span class="num">01</span><h2>Why not just use files?</h2>
+  <p>A <b>database</b> is an organised collection of related data: a student list, a bank's accounts, Instagram's posts. A <b>DBMS</b> (Database Management System) is the software that stores it and lets you <b>C</b>reate, <b>R</b>ead, <b>U</b>pdate and <b>D</b>elete it (CRUD) safely and fast.</p>
+  <p>Imagine storing everything in CSV files like this:</p>
+  <div class="card scroll"><table><tr><th>name</th><th>batch</th><th>marks</th><th>attendance</th></tr><tr><td>Naman</td><td>1</td><td>94</td><td>100</td></tr><tr><td>Amit</td><td>2</td><td>81</td><td>70</td></tr><tr><td>Aditya</td><td>1</td><td>31</td><td>100</td></tr></table></div>
+  <p>It works for 3 rows. Tap each card to see what breaks at scale.</p>
+  <div class="grid">
+    <button class="flip"><h3>🐢 Slow</h3><span class="hint">tap to reveal</span><div class="b">Finding one student in 2 million lines means reading line by line: O(N). A DBMS uses smart structures (indexes, coming in Lecture 6) to jump straight to the row.</div></button>
+    <button class="flip"><h3>🧱 Integrity</h3><span class="hint">tap to reveal</span><div class="b">Nothing stops someone writing <code>Naman, 1, Hello, 100</code> where marks should be a number. A DBMS enforces data types and rules.</div></button>
+    <button class="flip"><h3>👥 Concurrency</h3><span class="hint">tap to reveal</span><div class="b">Two people edit the same line at the same time. Whose version wins? A DBMS coordinates simultaneous access.</div></button>
+    <button class="flip"><h3>🔒 Security</h3><span class="hint">tap to reveal</span><div class="b">Anyone who can open the file sees everything, passwords included. A DBMS gives per-user permissions, e.g. read-only.</div></button>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Files are like keeping all your notes in a shared, unlocked cupboard. A DBMS is a library with a librarian: catalogue for quick lookup, rules on what may be shelved, and a lock on the restricted section.</div>
+  <div class="story"><small>Real story · Integrity</small><p>In 2020 scientists officially renamed 27 human genes such as <code>SEPT1</code> and <code>MARCH1</code>. Why? Excel kept silently converting them into dates like "1-Sep". A 2016 study found that roughly one in five genetics papers with gene lists had been hit by this error. A spreadsheet has no rule saying "this column is text, never a date".</p></div>
+</section>
+
+<section id="s2" class="rv">
+  <span class="num">02</span><h2>The relational model</h2>
+  <p>A relational database stores data as a collection of <b>tables</b> (formally called <i>relations</i>). Each row is one record and each column is one field. A table describes either an <b>entity</b>, a thing like <code>students</code> or <code>batches</code>, or a <b>relationship</b> between entities, like <code>student_batches</code> (who belongs to which batch). The word "relational" means exactly this: instead of piling everything into one giant sheet, we keep small, focused tables and <i>relate</i> them through shared values.</p>
+  <h3 class="sub">Why split data into related tables?</h3>
+  <p>Say we keep students and their batch details in one table:</p>
+  <div class="card scroll"><table><tr><th>name</th><th>batch_name</th><th>start_date</th><th>marks</th></tr><tr><td>Naman</td><td>AUG 22 Intermediate</td><td>2022-08-01</td><td>94</td></tr><tr><td>Aditya</td><td>AUG 22 Intermediate</td><td>2022-08-01</td><td>31</td></tr><tr><td>Amit</td><td>AUG 22 Beginner</td><td>2022-08-01</td><td>81</td></tr></table></div>
+  <p>Notice the batch name and date repeat on every row. With 5,000 students in a batch, that is 5,000 copies, and real trouble follows:</p>
+  <div class="rules">
+    <div><b>Wasted space.</b> The same text is stored again and again.</div>
+    <div><b>Painful updates.</b> Rename the batch and you must edit 5,000 rows. Miss one and the data now contradicts itself.</div>
+    <div><b>Accidental loss.</b> If the last student of a batch leaves and their row is deleted, the batch's details vanish too.</div>
+    <div><b>Typos.</b> "AUG 22 Intermediate" and "Aug22 Intermediate" become two different batches.</div>
+  </div>
+  <p>The relational fix is to store each fact <b>once</b>, in the table it belongs to, and connect the tables with an id:</p>
+  <div class="grid">
+    <div class="card scroll" style="margin:0"><b>batches</b><table><tr><th>id</th><th>name</th><th>start_date</th></tr><tr><td>1</td><td>AUG 22 Intermediate</td><td>2022-08-01</td></tr><tr><td>2</td><td>AUG 22 Beginner</td><td>2022-08-01</td></tr></table></div>
+    <div class="card scroll" style="margin:0"><b>students</b><table><tr><th>id</th><th>name</th><th>marks</th><th>batch_id</th></tr><tr><td>1</td><td>Naman</td><td>94</td><td>1</td></tr><tr><td>2</td><td>Aditya</td><td>31</td><td>1</td></tr><tr><td>3</td><td>Amit</td><td>81</td><td>2</td></tr></table></div>
+  </div>
+  <p style="margin-top:14px">Now a batch's name lives in exactly one row. Renaming it is a one-row change, every student instantly sees it, and deleting a student never touches batch details. A query can still join the two tables whenever you want the full picture (Lecture 3).</p>
+  <div class="analogy"><b>Analogy:</b> A restaurant bill says "Table 4", not a full description of the table, its seats and its location. The restaurant keeps that description in one place and the bill just points to it.</div>
+  <h3 class="sub">The rules every relational table follows</h3>
+  <div class="rules">
+    <div><b>1. One table, one subject.</b> A table holds one kind of thing or one relationship. Students go in <code>students</code>, batches in <code>batches</code>; mixing them brings back the repetition problems above.</div>
+    <div><b>2. Every row is unique.</b> No two rows may be identical in every column. If they were, you could never say which one to update or delete. Two students named Naman with the same marks are fine as long as something else, like a roll number, differs.</div>
+    <div><b>3. One data type per column.</b> If <code>marks</code> is a number, every value is a number. This is what lets the database sort marks, compute an average, or reject "Hello" outright.</div>
+    <div><b>4. Values are atomic.</b> "Atom" means indivisible: each cell holds one fact. A student with two phone numbers cannot have "9001, 9002" in one cell, because you could no longer search, count or update a single number cleanly. The proper fix (a separate table) comes in Schema Design. Some databases allow list columns, but that is outside the SQL standard and queries on them are slow.</div>
+    <div><b>5. Column names are unique.</b> With two columns called <code>name</code>, <code>SELECT name FROM students</code> would not know which one you mean.</div>
+    <div><b>6. Order is not guaranteed.</b> Neither columns nor rows come with a promised order. Always name your columns instead of relying on position, and use <code>ORDER BY</code> when order matters. MySQL usually returns rows by primary key, but that is a habit, not a promise; code that depends on it can break the day a column is added.</div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> "Atomic" is like one cell = one fact. You would not write "Mom, Dad, Sis" in a single contacts phone field; you'd add separate entries.</div>
+  <div class="card" id="quiz1"><h3 style="margin-bottom:6px">Is it allowed? Guess first.</h3></div>
+</section>
+
+<section id="s3" class="rv">
+  <span class="num">03</span><h2>Keys: how a row gets its identity</h2>
+  <p>Someone says "update Naman's marks to 100". What if there are two Namans? The database needs a reliable way to point at exactly one row. That is the job of keys. Think of them as three levels, each narrower than the last. We'll use a <code>students</code> table with columns <code>name, email, phone, batch, marks</code>.</p>
+  <div class="kd"><h3>1 · Super key: "any clues that pinpoint one row"</h3>A super key is any column or combination of columns whose values are never repeated across rows. Extra columns are allowed, even useless ones.
+    <div class="eg">✓ <code>(email)</code>, <code>(phone)</code> · ✓ <code>(name, email)</code> · ✓ <code>(name, email, marks)</code> · ✓ <code>(email, marks)</code><br>✗ <code>(name)</code>, <code>(batch)</code>, <code>(marks)</code> all repeat.<br>Adding columns to a unique column never breaks uniqueness, so one table has many super keys.</div></div>
+  <div class="kd"><h3>2 · Candidate key: "a super key with no wasted columns"</h3>A candidate key is a super key where removing <i>any</i> column destroys uniqueness. It is the trimmed-down version.
+    <div class="eg"><code>(name, email, marks)</code> → name and marks are dead weight → <code>(email)</code> is a candidate key. Likewise <code>(phone)</code>.<br>Composite example, <code>attendance(student_id, class_id, present)</code>: neither <code>student_id</code> alone nor <code>class_id</code> alone is unique, but the pair is, and dropping either breaks it. So <code>(student_id, class_id)</code> is a candidate key, while <code>(student_id, class_id, present)</code> is only a super key.</div></div>
+  <div class="kd"><h3>3 · Primary key: "the one candidate you choose"</h3>A table can have several candidate keys (email, phone) but needs one official identity. That chosen one is the primary key. MySQL stores rows on disk ordered by it and returns them in that order by default.
+    <div class="eg">Ideal primary keys never change and are never empty. Emails and phone numbers change, so tables usually add a dedicated column such as <code>student_id</code> for this job.</div></div>
+  <p><b>How they nest:</b> every primary key is a candidate key, and every candidate key is a super key, but not the other way round.</p>
+  <div class="card">
+    <h3>🔬 Key lab</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 0">Pick columns. The lab checks the data below and tells you what kind of key it is.</p>
+    <div class="cols" id="cols"></div>
+    <div class="res" id="kres">Select one or more columns…</div>
+    <div class="scroll" style="margin-top:14px"><table id="kt"></table></div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Aadhaar/passport numbers are candidate keys for a person. Your name is not, since many people share it. The one the school actually uses on the register, its roll number, is the primary key.</div>
+  <div class="card">
+    <b>Try this:</b> a table <code>attendance(student_id, class_id, attendance)</code>. Is <code>(student_id, class_id, attendance)</code> a candidate key?
+    <div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-a="1">Yes</button><button class="btn" data-a="0">No</button></div>
+    <div class="fb" id="fb2"></div>
+  </div>
+</section>
+
+<section id="s4" class="rv">
+  <span class="num">04</span><h2>Foreign keys: linking tables safely</h2>
+  <p>In Section 2 we split students and batches and linked them with a <code>batch_id</code> column. That linking column is a <b>foreign key</b>: a column in one table whose values must match values in a column of another table.</p>
+  <div class="card"><b>Reading it:</b> Jim's row says <code>batch_id = 2</code>. Go to <code>batches</code>, find the row with <code>id = 2</code>, and you land on Batch B. The table holding the foreign key (<code>students</code>) is the <i>child</i>; the table it points to (<code>batches</code>) is the <i>parent</i>.</div>
+  <h3 class="sub">What does it guarantee?</h3>
+  <p>Without a rule, someone could insert a student with <code>batch_id = 4</code> when no batch 4 exists, a link pointing at nothing. Declaring <code>students.batch_id</code> a foreign key of <code>batches.id</code> makes the database <b>reject</b> any value that isn't present in <code>batches.id</code>.</p>
+  <div class="analogy"><b>Analogy:</b> An airline ticket carries a passenger ID. The airline's system refuses to issue a ticket for an ID that isn't in its passenger list.</div>
+  <p><b>Two clarifications.</b> First, "foreign" describes a column's <i>role</i>, not its type: it has nothing to do with being a primary, candidate or super key in its own table. Second, it can technically point to any column of the parent, for example <code>students.year</code> → <code>years.id</code>, but it should point to the parent's primary key (or at least a unique column), otherwise one value could match several rows and the link becomes ambiguous.</p>
+  <h3 class="sub">The catch: what happens on delete?</h3>
+  <p>A foreign key protects <i>inserts</i>, but deletes are trickier. Delete Batch B from <code>batches</code> and Jim and Jack still say <code>batch_id = 2</code>, which now points to nothing. They are <b>orphans</b>. (Changing a batch's id has the same problem: students keep the old id and the data becomes <b>inconsistent</b>.) Databases let you choose how to handle it:</p>
+  <div class="grid">
+    <div class="kd" style="margin:0"><h3>RESTRICT</h3>Refuse the delete while any child rows still reference the parent. Safe: you must first move or remove Jim and Jack. Best when data loss would be costly.</div>
+    <div class="kd" style="margin:0"><h3>CASCADE</h3>Delete the parent <i>and automatically all its children</i>. Convenient and always consistent, but deleting one batch silently erases every student in it. Use with care.</div>
+  </div>
+  <p style="margin-top:14px">(The exact SQL for these comes in later lectures.) Now try it yourself. "No rule" mimics plain files with no foreign key at all, so you can see orphans appear; then switch to RESTRICT and CASCADE and delete Batch B again.</p>
+  <div class="card">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      <label>ON DELETE: <select id="mode"><option value="none">no rule (unsafe)</option><option value="restrict">RESTRICT</option><option value="cascade">CASCADE</option></select></label>
+      <button class="btn pri" id="del">Delete Batch B</button><button class="btn" id="rst">Reset</button>
+    </div>
+    <div class="two"><div class="scroll"><table><tr><th>batches</th><th></th></tr><tbody id="bt"></tbody></table></div><div class="scroll"><table><tr><th>id</th><th>student</th><th>batch_id</th></tr><tbody id="st"></tbody></table></div></div>
+    <div class="res" id="fres" style="margin-top:14px">Waiting for you to delete something…</div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Closing a school class while its students still list it as their class leaves them "orphaned", with a class number that no longer exists. CASCADE also sends the students away; RESTRICT refuses to close the class while anyone is enrolled.</div>
+</section>
+
+<section id="s5" class="rv">
+  <span class="num">05</span><h2>Quick recap</h2>
+  <div class="card recap"><ul style="margin:0;padding-left:20px">
+  <li>Files are slow, unchecked, unsafe for teams; a DBMS fixes this.</li>
+  <li>Relational = related tables; atomic values; no guaranteed row/column order (use <code>ORDER BY</code> later).</li>
+  <li>Super key ⊇ candidate key ⊇ primary key (the chosen one).</li>
+  <li>Foreign keys keep tables consistent, and deletes need a plan.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Lecture 2 · CRUD, where we finally write SQL.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+// theme
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const cur=r.dataset.theme||(d?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'};
+// reveal
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.08});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+document.querySelectorAll('.flip').forEach(f=>f.onclick=()=>f.classList.toggle('open'));
+// quiz 1
+const Q=[["Two columns both named <code>name</code> in one table?",0,"Column names must be unique, otherwise <code>SELECT name</code> is ambiguous."],
+["A <code>marks</code> column holding numbers and the text 'Hello'?",0,"Every column has a single data type."],
+["Two students with the same name and marks, but different roll numbers?",1,"Rows only need to differ somewhere. The roll number does that."],
+["Rely on rows coming back in the same order without <code>ORDER BY</code>?",0,"SQL never guarantees row order, even if MySQL usually follows the primary key."]];
+Q.forEach(([t,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${t}</div><div class="row"><button class="btn">Allowed</button><button class="btn">Not allowed</button></div><div class="fb"></div>`;
+d.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{const ok=(i===0?1:0)===a;d.querySelector('.fb').className='fb '+(ok?'ok':'no');d.querySelector('.fb').innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});$('#quiz1').appendChild(d)});
+// key lab
+const C=['name','email','phone','batch','marks'];
+const D=[['Naman','naman@s.com','9001',1,94],['Amit','amit@s.com','9002',2,81],['Aditya','aditya@s.com','9003',1,31],['Naman','naman2@s.com','9004',2,94]];
+const sel=new Set();
+const uniq=idx=>{const s=new Set(D.map(r=>idx.map(i=>r[i]).join('|')));return s.size===D.length};
+function paint(){
+ $('#cols').innerHTML=C.map((c,i)=>`<span class="col ${sel.has(i)?'on':''}" data-i="${i}">${c}</span>`).join('');
+ $('#kt').innerHTML='<tr>'+C.map((c,i)=>`<th class="${sel.has(i)?'hl':''}">${c}</th>`).join('')+'</tr>'+D.map(r=>'<tr>'+r.map((v,i)=>`<td class="${sel.has(i)?'hl':''}">${v}</td>`).join('')+'</tr>').join('');
+ document.querySelectorAll('.col').forEach(e=>e.onclick=()=>{const i=+e.dataset.i;sel.has(i)?sel.delete(i):sel.add(i);paint()});
+ const idx=[...sel];const r=$('#kres');
+ if(!idx.length){r.innerHTML='Select one or more columns…';return}
+ if(!uniq(idx)){r.innerHTML='<strong class="no">Not a key</strong><br>Some rows share these values, so they can\'t identify a row.';return}
+ const min=idx.every(x=>!idx.length>1||idx.length===1||!uniq(idx.filter(y=>y!==x)));
+ r.innerHTML=min?'<strong class="ok">Candidate key ✓</strong> (so also a super key)<br>Unique, and nothing can be removed. Any candidate key could be chosen as primary.':'<strong style="color:var(--acc)">Super key, but not candidate</strong><br>Unique, but at least one column is redundant. Try removing one.';
+}
+paint();
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const ok=b.dataset.a==='0';$('#fb2').className='fb '+(ok?'ok':'no');$('#fb2').innerHTML=ok?'✓ Right. It\'s a super key, but <code>attendance</code> is redundant: <code>(student_id, class_id)</code> already identifies the row.':'✗ Look again: can you remove <code>attendance</code> and still identify each row?'});
+// FK demo
+let B,S;
+function fk(){B=[['A',1],['B',2],['C',3]].map(([n,id])=>({n,id,g:0}));S=[['John',1],['Jane',1],['Jim',2],['Jenny',3],['Jack',2]].map(([n,b],i)=>({n,b,id:i+1,o:0,g:0}));draw();$('#fres').textContent='Waiting for you to delete something…'}
+function draw(){$('#bt').innerHTML=B.filter(b=>!b.g).map(b=>`<tr><td>Batch ${b.n}</td><td>id ${b.id}</td></tr>`).join('');
+$('#st').innerHTML=S.filter(s=>!s.g).map(s=>`<tr class="${s.o?'orph':''}"><td>${s.id}</td><td>${s.n}</td><td>${s.b}</td></tr>`).join('')}
+$('#del').onclick=()=>{const m=$('#mode').value,b=B.find(x=>x.id===2&&!x.g);if(!b){$('#fres').textContent='Batch B is already deleted. Hit reset.';return}
+ const kids=S.filter(s=>s.b===2&&!s.g);
+ if(m==='restrict'){$('#fres').innerHTML='<strong class="ok">Blocked ✓</strong><br>The DB refused: 2 students still reference Batch B.';return}
+ b.g=1;
+ if(m==='cascade'){kids.forEach(s=>s.g=1);$('#fres').innerHTML='<strong style="color:var(--acc)">Cascaded</strong><br>Jim and Jack were deleted along with the batch. Consistent, but data is lost.'}
+ else{kids.forEach(s=>s.o=1);$('#fres').innerHTML='<strong class="no">Orphans!</strong><br>Jim and Jack point to batch 2, which no longer exists.'}
+ draw()};
+$('#rst').onclick=fk;fk();
+</script>
+</body>
+</html>
