@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 5 · GROUP BY &amp; HAVING</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+pre .k{color:#e6a76a;font-weight:600}pre .s{color:#9cc9b4}pre .c{color:#8f8571}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.pair{grid-template-columns:1fr}}
+.pair h4{margin:0;font:600 12px Outfit;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.mini{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.frm label{font-size:12px;color:var(--mute);display:block}
+tr.hit td{background:rgba(63,107,92,.16);transition:.5s}
+tr.miss td{opacity:.38;transition:.5s}
+tr.chg td.c{background:rgba(184,86,47,.22)}
+tr.new td{background:rgba(63,107,92,.16)}
+td.nl{color:var(--acc);font-style:italic}
+.qb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qb .btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt{display:block;width:100%;text-align:left;margin-top:8px}
+.wd{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.wd span{border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;background:var(--bg);transition:.35s}
+.wd span.hit{background:rgba(63,107,92,.2);border-color:var(--ok)}
+.wd span.miss{opacity:.35}
+.wd span.id{font-family:ui-monospace,Menlo,monospace}
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;margin:8px 0;background:var(--bg);opacity:.5;transition:.4s}
+.step.on{opacity:1;border-color:var(--acc);background:rgba(184,86,47,.08);transform:translateX(6px)}
+.step b{font-family:Outfit;color:var(--acc);min-width:22px}
+tr.pick td{background:rgba(184,86,47,.2)}
+tr.sel{cursor:pointer}tr.sel:hover td{background:rgba(184,86,47,.1)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:10px 0}
+.sl label{font-size:13px;color:var(--mute)}
+td.cnt{background:rgba(63,107,92,.22);font-weight:600}
+.venn{display:flex;align-items:center;justify-content:center;gap:0;margin:16px 0}
+.venn svg circle{transition:.4s;fill-opacity:.55}
+.jtabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.jtabs .btn.on{background:var(--acc2);border-color:var(--acc2);color:#fff}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.m1 td{background:rgba(63,107,92,.22)}
+tr.m2 td{background:rgba(184,86,47,.16)}
+tr.dim td{opacity:.3}
+.arrowrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute);margin:4px 0;flex-wrap:wrap}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.count-badge{font:600 12px Outfit;background:var(--acc);color:#fff;padding:3px 9px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.4}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.38}
+tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+td.chk{position:relative}
+td.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:rgba(184,86,47,.45)}100%{background:transparent}}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.tagpending{color:var(--mute)}
+.res-row{opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.caption{font-size:15px;background:var(--bg2);border-left:4px solid var(--acc);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.caption b{font-family:Outfit}
+.caption .ico{font-size:18px;line-height:1.3}
+.joinbox{display:flex;gap:0;align-items:stretch;margin:14px 0;overflow-x:auto;border-radius:14px}
+.jtable{flex:1 1 260px;min-width:230px}
+.jtable table{width:100%;font-size:13.5px;border-collapse:collapse}
+.jtable-head{font:700 11px Outfit;letter-spacing:.09em;text-transform:uppercase;padding:8px 12px;color:#fff}
+.jtable.left .jtable-head{background:var(--acc2);border-radius:12px 0 0 0}
+.jtable.right .jtable-head{background:var(--acc);border-radius:0 12px 0 0}
+.jtable td,.jtable th{border:1px solid var(--line);padding:6px 8px}
+.jtable.left table{border-radius:0 0 0 12px;overflow:hidden}
+.jtable.right table{border-radius:0 0 12px 0;overflow:hidden}
+.jlink{flex:0 0 78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 6px;color:var(--mute);font-size:11px;text-align:center;background:var(--bg2)}
+.jlink b{color:var(--acc);font-family:Outfit;font-size:22px}
+.jlink code{font-size:10.5px;background:var(--card);padding:3px 5px;border-radius:6px;word-break:break-word}
+.jtable.left tr.current td{box-shadow:inset 0 0 0 2px var(--acc2)}
+.jtable.right tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+.cheat{width:100%;border-collapse:collapse;font-size:14.5px;margin:14px 0}
+.cheat th,.cheat td{border:1px solid var(--line);padding:10px 12px;text-align:center}
+.cheat th{font-family:Outfit;background:var(--bg2)}
+.cheat td:first-child,.cheat th:first-child{text-align:left;font-family:Outfit;font-weight:600}
+.cheat .y{color:var(--ok)}.cheat .n{color:var(--bad)}
+.progress{height:6px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:var(--acc);transition:.3s;width:0}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
+.bucket{border:2px dashed var(--line);border-radius:14px;padding:10px 12px;min-height:78px;transition:.3s}
+.bucket.hasitems{border-style:solid;border-color:var(--acc2)}
+.bucket h4{margin:0 0 6px;font:700 13px Outfit;color:var(--acc2)}
+.bucket .chip{display:inline-block;background:var(--bg2);border-radius:8px;padding:3px 8px;margin:2px;font-size:12.5px;opacity:0;animation:pop .3s forwards}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.bucket.removed{border-color:var(--bad);opacity:.4}
+.bucket .cnt{float:right;font:700 13px Outfit;color:var(--acc)}
+tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+tr.done td{opacity:.35}
+.caption{font-size:15px;background:var(--bg2);border-left:4px solid var(--acc);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.caption .ico{font-size:18px}
+.progress{height:6px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:var(--acc);transition:.3s;width:0}
+.pipe2{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.pipe2 span{font:600 13px Outfit;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--mute);transition:.3s}
+.pipe2 span.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pipe2 span.arrow{border:none;background:none;padding:8px 2px;color:var(--line)}
+.sl2{display:flex;align-items:center;gap:12px;margin:12px 0;flex-wrap:wrap}
+input[type=range]{accent-color:var(--acc)}
+tr.badq td{background:rgba(178,58,58,.13)}
+tr.goodq td{background:rgba(63,107,92,.15)}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 5</span>
+  <h1>GROUP BY and <em>HAVING</em></h1>
+  <p class="lead">Aggregate functions gave us one number for the whole table. GROUP BY gives us one number <i>per group</i>. HAVING then decides which groups make the cut.</p>
+  <div class="chips"><a href="#s1">Why GROUP BY</a><a href="#s2">GROUP BY in action</a><a href="#s3">The SELECT rule</a><a href="#s4">Multiple columns</a><a href="#s5">HAVING</a><a href="#s6">Pipeline &amp; WHERE vs HAVING</a><a href="#s7">Recap</a></div>
+</header>
+
+<section id="s1" class="rv">
+  <span class="num">01</span><h2>From one number to many</h2>
+  <p>In Lecture 3, <code>COUNT</code>, <code>AVG</code> and friends collapsed an entire table into a <b>single</b> value: total students, average marks. But often we don't want one number for everyone, we want one number <i>per category</i>: how many students are in <b>each</b> batch, the average marks of <b>each</b> batch, and so on.</p>
+  <p><code>GROUP BY</code> is what makes this possible. It splits a table into smaller buckets, one bucket per distinct value of the column you group by, and then runs the aggregate function separately <b>inside each bucket</b>.</p>
+  <div class="analogy"><b>Analogy:</b> Sorting a deck of exam sheets into piles by class section before counting each pile. Without sorting, you can only say "200 sheets total". After sorting into piles, you can say "Section A: 40, Section B: 55, ...". GROUP BY is that sorting step, done automatically.</div>
+</section>
+
+<section id="s2" class="rv">
+  <span class="num">02</span><h2>GROUP BY in action</h2>
+  <p>Our table for this lecture: 9 students spread across 3 batches.</p>
+  <pre class="sql">SELECT COUNT(*), batch_id
+FROM students
+GROUP BY batch_id;</pre>
+  <p><code>GROUP BY batch_id</code> gathers every row with the same <code>batch_id</code> into one group, and <code>COUNT(*)</code> is then computed <b>separately for each group</b>, giving one count per batch instead of one count for the whole table.</p>
+  <div class="card"><h3>🪣 Bucket-sort visualizer</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 12px">Step through the table row by row and watch GROUP BY sort each student into their batch's bucket. Once every row is placed, the aggregate runs on each bucket.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><button class="btn pri" data-g1step>Step ▶</button><button class="btn" data-g1run>▶▶ Run all</button><button class="btn" data-g1reset>Reset</button></div>
+    <div class="progress"><i data-g1bar></i></div>
+    <div class="caption"><span class="ico">👉</span><span data-g1cap></span></div>
+    <div class="scroll"><table><thead><tr><th>id</th><th>name</th><th>age</th><th>batch_id</th></tr></thead><tbody data-g1src></tbody></table></div>
+    <p style="font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:16px 0 4px">↓ groups forming</p>
+    <div class="buckets" data-g1buckets></div>
+    <p style="font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:16px 0 4px">↓ result: COUNT(*) per group</p>
+    <div class="scroll"><table><thead><tr><th>COUNT(*)</th><th>batch_id</th></tr></thead><tbody data-g1out></tbody></table></div>
+  </div>
+  <div class="card" id="q2a"></div>
+</section>
+
+<section id="s3" class="rv">
+  <span class="num">03</span><h2>The one rule: what can you SELECT?</h2>
+  <p>Once GROUP BY runs, the table no longer exists as individual rows, only as groups. So the SELECT clause is only allowed to mention:</p>
+  <div class="rules">
+    <div><b>1. The column(s) you grouped by.</b> Every row inside a group shares the same value there, so it's safe to print.</div>
+    <div><b>2. Aggregate functions</b> like <code>COUNT</code>, <code>AVG</code>, <code>SUM</code>, <code>MIN</code>, <code>MAX</code>, computed over each group.</div>
+  </div>
+  <p>Any other raw column is ambiguous: a group can contain many rows, each with a <i>different</i> value for that column, so which one would SQL print? This is exactly the same reasoning from Lecture 3 about aggregates and non-aggregated columns together, just extended to groups.</p>
+  <div class="card"><h3>✅ / 🚫 Valid SELECT lab</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 12px">The query is <code>... GROUP BY batch_id</code>. Would adding this to SELECT be allowed?</p>
+    <div id="validlab"></div>
+  </div>
+</section>
+
+<section id="s4" class="rv">
+  <span class="num">04</span><h2>GROUP BY on multiple columns</h2>
+  <p>You can group by more than one column at once. Then two rows land in the same bucket only if <b>every</b> grouped column matches. Task: for a hiring platform, find how many interview rounds each user had, <i>per company</i> they interviewed with.</p>
+  <div class="scroll"><table><thead><tr><th>user_id</th><th>company_id</th><th>round_date</th><th>interview_result</th></tr></thead><tbody>
+    <tr><td>1</td><td>1</td><td>2023-07-01</td><td>1</td></tr><tr><td>1</td><td>1</td><td>2023-07-03</td><td>1</td></tr><tr><td>1</td><td>1</td><td>2023-07-07</td><td>0</td></tr>
+    <tr><td>1</td><td>2</td><td>2023-07-02</td><td>0</td></tr><tr><td>2</td><td>2</td><td>2023-07-03</td><td>1</td></tr><tr><td>2</td><td>2</td><td>2023-07-04</td><td>1</td></tr>
+  </tbody></table></div>
+  <pre class="sql">SELECT user_id, company_id, COUNT(*)
+FROM companies_users
+GROUP BY user_id, company_id;</pre>
+  <p>Notice user 1 appears with <i>two</i> different companies. Grouping by <code>user_id</code> alone would wrongly merge those into one bucket; grouping by the <b>pair</b> <code>(user_id, company_id)</code> keeps them apart correctly. Try it:</p>
+  <div class="card"><h3>🪣 Composite-key bucket sorter</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><button class="btn pri" data-g2step>Step ▶</button><button class="btn" data-g2run>▶▶ Run all</button><button class="btn" data-g2reset>Reset</button></div>
+    <div class="progress"><i data-g2bar></i></div>
+    <div class="caption"><span class="ico">👉</span><span data-g2cap></span></div>
+    <div class="buckets" data-g2buckets></div>
+    <p style="font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:16px 0 4px">↓ result</p>
+    <div class="scroll"><table><thead><tr><th>user_id</th><th>company_id</th><th>COUNT(*)</th></tr></thead><tbody data-g2out></tbody></table></div>
+  </div>
+  <div class="analogy"><b>Analogy:</b> Sorting laundry by both <i>owner</i> and <i>colour</i>. Sorting by owner alone mixes a person's whites and darks together; sorting by the pair keeps "Aisha's whites" separate from "Aisha's darks".</div>
+  <h3 class="sub">A join + GROUP BY example</h3>
+  <p>Task: print every actor's name with how many films they've acted in. This needs a join (actor details and film-acting records live in different tables) before grouping:</p>
+  <pre class="sql">SELECT a.first_name, a.last_name, COUNT(*) AS count_movies
+FROM actor a
+JOIN film_actor fa
+  ON a.actor_id = fa.actor_id
+GROUP BY a.actor_id;</pre>
+  <p>The join first stitches every actor to each of their film credits (Lecture 3/4); GROUP BY then buckets those stitched rows by actor, and COUNT tallies each bucket. Note we group by <code>a.actor_id</code> (unique per actor), which is enough to also safely print <code>first_name</code> and <code>last_name</code> alongside it, since every row for one actor_id shares the same name.</p>
+  <p>A simpler single-table case: table <code>user_classes(user_id, class_id, attended)</code>, where <code>attended</code> is 0 or 1. Find each user's attendance rate:</p>
+  <pre class="sql">SELECT user_id, AVG(attended)
+FROM user_classes
+GROUP BY user_id;</pre>
+  <p>Grouping by <code>user_id</code> buckets a user's classes together, and <code>AVG(attended)</code> turns each bucket's 0s and 1s into a fraction, exactly their attendance rate.</p>
+</section>
+
+<section id="s5" class="rv">
+  <span class="num">05</span><h2>HAVING: filtering the groups themselves</h2>
+  <p>Task: two tables, <code>Students(id, name, age, batch_id)</code> and <code>Batches(id, name)</code>. Print only the batches with <b>more than 100 students</b>, along with their student count.</p>
+  <pre class="sql">SELECT COUNT(S.id), B.name
+FROM Students S
+JOIN Batches B ON S.batch_id = B.id
+GROUP BY B.name
+HAVING COUNT(S.id) > 100;</pre>
+  <p><code>GROUP BY B.name</code> forms one group per batch and counts its students. <code>HAVING</code> then looks at those <b>per-group counts</b> and keeps only the groups where the count exceeds 100, discarding the smaller batches entirely, group and all.</p>
+  <div class="analogy"><b>Analogy:</b> A class monitor sorts students into groups by house (GROUP BY), counts each house, then the principal only calls out houses with more than 50 members for the inter-house trophy (HAVING). Houses with fewer members aren't even mentioned.</div>
+  <div class="card"><h3>🔎 HAVING filter lab</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 6px">Using our 3-batch student data from Section 2. Slide the threshold and watch which batch-groups survive <code>HAVING COUNT(*) &gt; N</code>.</p>
+    <div class="sl2"><label>N = <b data-hval>2</b></label><input type="range" id="hslide" min="0" max="4" value="2" style="flex:1;min-width:160px"></div>
+    <pre class="sql" id="hsql"></pre>
+    <div class="buckets" id="hbuckets"></div>
+    <div class="res" id="hres"></div>
+  </div>
+  <div class="card" id="q5"></div>
+</section>
+
+<section id="s6" class="rv">
+  <span class="num">06</span><h2>The full pipeline, and WHERE vs HAVING</h2>
+  <p>Putting everything from this course together, a query with joins, filtering, grouping and sorting executes in this fixed order, regardless of the order you type the clauses in:</p>
+  <div class="pipe2" id="pipe2"></div>
+  <div class="card" id="pipedesc"></div>
+  <button class="btn pri" id="pnext" style="margin-top:8px">Next stage ▶</button>
+  <p>The key distinction: <b>WHERE filters individual rows, before grouping happens.</b> <b>HAVING filters whole groups, after grouping happens.</b> This is also exactly why <code>WHERE salary &gt; AVG(salary)</code> style conditions don't work in WHERE (more on this with subqueries in a future lecture) — WHERE runs before any aggregate is computed, row by row, so it has no concept of a group's total or average yet.</p>
+  <div class="rules">
+    <div><b>WHERE</b>: works on raw rows, cannot use aggregate functions, runs first.</div>
+    <div><b>HAVING</b>: works on already-formed groups, built specifically to use aggregate functions, runs after GROUP BY.</div>
+    <div><b>Rule of thumb:</b> filtering on a raw column (age, batch_id, rating) → WHERE. Filtering on a computed group total (count, average, sum) → HAVING.</div>
+  </div>
+  <div class="card" id="q6"></div>
+</section>
+
+<section id="s7" class="rv">
+  <span class="num">07</span><h2>Quick recap</h2>
+  <div class="card"><ul style="margin:0;padding-left:20px">
+  <li>GROUP BY buckets rows by shared column value(s); an aggregate then runs separately per bucket.</li>
+  <li>SELECT may only show grouped columns and aggregate functions, nothing else.</li>
+  <li>Grouping on multiple columns buckets by the whole combination, not each column separately.</li>
+  <li>HAVING filters the groups themselves, using aggregate conditions; it runs after GROUP BY.</li>
+  <li>Pipeline order: FROM/JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Lecture 6 · Joins Deep Dive (Inner, Left, Right &amp; Full).</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.05});
+$$('.rv').forEach(e=>io.observe(e));
+const KW='SELECT|FROM|WHERE|JOIN|ON|AS|GROUP BY|HAVING|ORDER BY|LIMIT|COUNT|AVG|SUM';
+const hl=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(new RegExp("('[^']*')|(--.*$)|\\b("+KW+")\\b",'gmi'),(m,a,c,k)=>a?`<span class="s">${a}</span>`:c?`<span class="c">${c}</span>`:`<span class="k">${k}</span>`);
+const paint=()=>$$('pre.sql').forEach(p=>{if(p.dataset.h!==p.textContent){p.innerHTML=hl(p.textContent);p.dataset.h=p.textContent}});
+function mk(el,items){el.innerHTML='<h3 style="margin-bottom:4px">Your turn: guess first</h3>';items.forEach(([q,o,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${q}</div>`+o.map((t,i)=>`<button class="btn opt" data-i="${i}">${t}</button>`).join('')+'<div class="fb"></div>';d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===a,f=d.querySelector('.fb');f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});el.appendChild(d)})}
+mk($('#q2a'),[["<code>SELECT batch_id, MAX(age) FROM students GROUP BY batch_id;</code> — what does this print?",["One row per student, with their batch's max age repeated","One row per batch, with the oldest age in that batch","One single row, the oldest age overall"],1,"GROUP BY collapses each batch into one row; MAX(age) is computed separately within each batch's group."]]);
+mk($('#q5'),[["With our 3 batches (counts 4, 3, 2), does <code>HAVING COUNT(*) > 3</code> keep batch_id 2 (count 3)?",["Yes, 3 is close enough","No, 3 is not greater than 3","Only if ORDER BY is added"],1,"HAVING uses a strict comparison here; a count of exactly 3 does not satisfy > 3."]]);
+mk($('#q6'),[["A query needs 'only students older than 18' AND 'only batches with more than 5 such students'. Where does each condition go?",["Both in WHERE","Both in HAVING","Age filter in WHERE, batch-size filter in HAVING"],2,"Age is a raw per-row fact (WHERE); batch size is a computed per-group count (HAVING)."]]);
+
+// ---- Group by visualizer 1: single column ----
+const STU=[[1,'A',20,1],[2,'B',21,3],[3,'C',22,1],[4,'D',23,2],[5,'E',23,1],[6,'F',25,2],[7,'G',22,3],[8,'H',21,2],[9,'I',20,1]];
+const COLORS={1:'var(--acc2)',2:'var(--acc)',3:'#8a6fae'};
+let g1i,g1groups,g1timer;
+function g1init(){g1i=0;g1groups={};g1timer&&clearInterval(g1timer);
+  $('[data-g1buckets]').innerHTML=[1,2,3].map(b=>`<div class="bucket" id="bkt${b}"><h4 style="color:${COLORS[b]}">batch_id = ${b}</h4></div>`).join('');
+  $('[data-g1out]').innerHTML='';
+  $('[data-g1cap]').textContent='Press Step to scan the table, one student at a time.';
+  g1draw();
+}
+function g1draw(){
+  $('[data-g1src]').innerHTML=STU.map((s,i)=>`<tr class="${i===g1i?'current':i<g1i?'done':''}"><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`).join('');
+  $('[data-g1bar]').style.width=Math.min(100,100*g1i/STU.length)+'%';
+}
+function g1step(){
+  if(g1i>=STU.length){
+    // reveal counts
+    const out=$('[data-g1out]');const keys=Object.keys(g1groups).sort();
+    if(out.children.length<keys.length){const k=keys[out.children.length];const tr=document.createElement('tr');tr.className='res-row';tr.innerHTML=`<td>${g1groups[k].length}</td><td>${k}</td>`;out.appendChild(tr);
+      $('[data-g1cap]').innerHTML=`Bucket <b>batch_id = ${k}</b> has <b>${g1groups[k].length}</b> students → COUNT(*) = ${g1groups[k].length}.`;
+      return out.children.length<keys.length;}
+    $('[data-g1cap]').innerHTML='<b>Done.</b> Every bucket has been counted.';return false;
+  }
+  const s=STU[g1i];const b=s[3];g1groups[b]=g1groups[b]||[];g1groups[b].push(s);
+  const el=document.getElementById('bkt'+b);el.classList.add('hasitems');
+  el.insertAdjacentHTML('beforeend',`<span class="chip">${s[1]} (id ${s[0]})</span>`);
+  $('[data-g1cap]').innerHTML=`Student <b>${s[1]}</b> has batch_id <b>${b}</b> → moved into the batch_id=${b} bucket.`;
+  g1i++;g1draw();return true;
+}
+$('[data-g1step]').onclick=()=>g1step();
+$('[data-g1run]').onclick=()=>{clearInterval(g1timer);g1timer=setInterval(()=>{if(!g1step())clearInterval(g1timer)},380)};
+$('[data-g1reset]').onclick=g1init;
+g1init();
+
+// ---- Group by visualizer 2: composite key ----
+const CU=[[1,1,'07-01',1],[1,1,'07-03',1],[1,1,'07-07',0],[1,2,'07-02',0],[2,2,'07-03',1],[2,2,'07-04',1]];
+let g2i,g2groups,g2timer;
+function g2init(){g2i=0;g2groups={};g2timer&&clearInterval(g2timer);
+  $('[data-g2buckets]').innerHTML='';$('[data-g2out]').innerHTML='';
+  $('[data-g2cap]').textContent='Press Step to scan each interview round.';
+  $('[data-g2bar]').style.width='0%';
+}
+function g2step(){
+  if(g2i>=CU.length){
+    const out=$('[data-g2out]');const keys=Object.keys(g2groups).sort();
+    if(out.children.length<keys.length){const k=keys[out.children.length];const[u,c]=k.split('-');const tr=document.createElement('tr');tr.className='res-row';tr.innerHTML=`<td>${u}</td><td>${c}</td><td>${g2groups[k]}</td>`;out.appendChild(tr);
+      $('[data-g2cap]').innerHTML=`Bucket <b>(user_id=${u}, company_id=${c})</b> → COUNT(*) = ${g2groups[k]}.`;return out.children.length<keys.length;}
+    $('[data-g2cap]').innerHTML='<b>Done.</b> Every (user, company) pair has been counted.';return false;
+  }
+  const r=CU[g2i];const k=r[0]+'-'+r[1];
+  if(!g2groups[k]){g2groups[k]=0;
+    $('[data-g2buckets]').insertAdjacentHTML('beforeend',`<div class="bucket hasitems" id="bkt2_${k}"><h4>user ${r[0]} · company ${r[1]}</h4></div>`);}
+  g2groups[k]++;
+  document.getElementById('bkt2_'+k).insertAdjacentHTML('beforeend',`<span class="chip">${r[2]} (result ${r[3]})</span>`);
+  $('[data-g2cap]').innerHTML=`Round on <b>${r[2]}</b>: user_id=${r[0]}, company_id=${r[1]} → moved into the (${r[0]}, ${r[1]}) bucket.`;
+  $('[data-g2bar]').style.width=Math.min(100,100*(g2i+1)/CU.length)+'%';
+  g2i++;return true;
+}
+$('[data-g2step]').onclick=()=>g2step();
+$('[data-g2run]').onclick=()=>{clearInterval(g2timer);g2timer=setInterval(()=>{if(!g2step())clearInterval(g2timer)},380)};
+$('[data-g2reset]').onclick=g2init;
+g2init();
+
+// ---- Valid SELECT lab ----
+const VQ=[["batch_id","valid","It's the grouped column — same value throughout each group."],
+["COUNT(*)","valid","An aggregate, computed once per group — always allowed."],
+["name","invalid","Different students in the same batch can have different names — SQL wouldn't know which one to show."],
+["AVG(age)","valid","An aggregate over each group's ages."],
+["age","invalid","Ages vary within a batch's group, so a single value can't represent it."],
+["MAX(age)","valid","An aggregate — the largest age found in each group."]];
+$('#validlab').innerHTML=VQ.map((v,i)=>`<div class="q"><code>SELECT ${v[0]} FROM students GROUP BY batch_id;</code><div class="row" style="display:flex;gap:8px;margin-top:8px"><button class="btn" data-vi="${i}" data-va="valid">Valid</button><button class="btn" data-vi="${i}" data-va="invalid">Invalid</button></div><div class="fb" id="vfb${i}"></div></div>`).join('');
+$$('[data-vi]').forEach(b=>b.onclick=()=>{const i=+b.dataset.vi,ok=b.dataset.va===VQ[i][1];const f=$('#vfb'+i);f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct — ':'✗ Not quite — ')+VQ[i][2]});
+
+// ---- HAVING slider lab ----
+function hdraw(){
+  const n=+$('#hslide').value;$('[data-hval]').textContent=n;
+  $('#hsql').textContent=`SELECT COUNT(*), batch_id\nFROM students\nGROUP BY batch_id\nHAVING COUNT(*) > ${n};`;
+  const groups={1:4,2:3,3:2};
+  $('#hbuckets').innerHTML=Object.entries(groups).map(([b,c])=>{
+    const keep=c>n;
+    return `<div class="bucket hasitems ${keep?'':'removed'}"><h4 style="color:${COLORS[b]}">batch_id = ${b}</h4><span class="cnt">${c}</span><div style="clear:both;font-size:12.5px;margin-top:4px" class="${keep?'tagok':'tagexcl'}">${keep?'✅ kept: '+c+' > '+n:'❌ removed: '+c+' is not > '+n}</div></div>`;
+  }).join('');
+  const kept=Object.entries(groups).filter(([b,c])=>c>n);
+  $('#hres').innerHTML=`<strong>${kept.length}</strong> of 3 batches survive HAVING.`+(kept.length?' Result: '+kept.map(([b,c])=>`(COUNT=${c}, batch_id=${b})`).join(', '):' No batch meets the threshold.');
+  paint();
+}
+$('#hslide').oninput=hdraw;hdraw();
+
+// ---- pipeline chips ----
+const STAGES=[['FROM / JOIN','Load the table(s) and stitch rows together if joins are involved.'],['WHERE','Drop individual rows that fail the row-level condition. No aggregates allowed yet.'],['GROUP BY','Bucket the surviving rows by the grouping column(s).'],['HAVING','Drop entire groups that fail a condition on their aggregate.'],['SELECT','Pick grouped columns and aggregate values to output.'],['ORDER BY / LIMIT','Sort and slice the final rows.']];
+let pstep=0;
+function pdraw(){$('#pipe2').innerHTML=STAGES.map((s,i)=>`<span class="${i===pstep?'on':''}">${s[0]}</span>`+(i<STAGES.length-1?'<span class="arrow">→</span>':'')).join('');
+  $('#pipedesc').innerHTML=`<b>${STAGES[pstep][0]}:</b> ${STAGES[pstep][1]}`;}
+$('#pipe2').addEventListener('click',e=>{const i=[...$('#pipe2').children].filter(c=>c.tagName==='SPAN'&&!c.classList.contains('arrow')).indexOf(e.target);if(i>=0){pstep=i;pdraw()}});
+$('#pnext').onclick=()=>{pstep=(pstep+1)%STAGES.length;pdraw()};
+pdraw();
+paint();
+</script>
+</body>
+</html>
