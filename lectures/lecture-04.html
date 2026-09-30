@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lecture 4 · Aggregate Functions, Sorting &amp; Top-N</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.15;margin:0}
+main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:72px 0 40px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(38px,7vw,60px);margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),#d69a4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:560px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:6px 14px;border-radius:99px;background:var(--card);transition:.2s}
+.chips a:hover{transform:translateY(-2px);border-color:var(--acc)}
+section{margin-top:64px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(26px,4.5vw,34px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+.story{background:linear-gradient(135deg,#3b4d43,#2c3a33);color:#f2ead9;border-radius:18px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+.story:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(214,154,74,.45),transparent 70%)}
+.story small{font:600 11px Outfit;letter-spacing:.14em;text-transform:uppercase;color:#e3b877}
+.story p{margin:8px 0 0;position:relative}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.flip{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;font:inherit;color:inherit;transition:.25s;width:100%}
+.flip:hover{transform:translateY(-3px);border-color:var(--acc)}
+.flip h3{font-size:19px;margin-bottom:6px}
+.flip .b{max-height:0;overflow:hidden;opacity:0;transition:.4s;color:var(--mute);font-size:14.5px}
+.flip.open .b{max-height:260px;opacity:1;margin-top:8px}
+.flip .hint{font-size:12px;color:var(--acc)}
+.flip.open .hint{display:none}
+button.btn{font:600 14px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+button.btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+button.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.q{padding:14px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border:0}
+.q .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.fb{font-size:14px;margin-top:8px;min-height:1.4em;transition:.3s}
+.ok{color:var(--ok)}.no{color:var(--bad)}
+.cols{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.col{cursor:pointer;user-select:none;border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;transition:.2s;background:var(--bg)}
+.col.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{margin-top:6px;padding:14px 16px;border-radius:14px;background:var(--bg2);transition:.3s;font-size:15px}
+.res strong{font-family:Outfit;font-size:17px}
+td.hl,th.hl{background:rgba(184,86,47,.13)}
+tr.orph td{background:rgba(178,58,58,.14);text-decoration:line-through;text-decoration-color:var(--bad)}
+tr.gone{display:none}
+.two{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.recap li{margin:6px 0}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.rules{display:grid;gap:10px;margin:16px 0}.rules>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.rules b{font-family:Outfit;color:var(--acc)}
+.kd{border:1px solid var(--line);border-left:4px solid var(--acc2);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0}.kd h3{font-size:20px;margin-bottom:6px}.kd .eg{font-size:14.5px;color:var(--mute);background:var(--bg2);padding:10px 12px;border-radius:10px;margin-top:8px}
+h3.sub{font-size:21px;margin:26px 0 8px}
+
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+pre .k{color:#e6a76a;font-weight:600}pre .s{color:#9cc9b4}pre .c{color:#8f8571}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.pair{grid-template-columns:1fr}}
+.pair h4{margin:0;font:600 12px Outfit;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.mini{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.frm label{font-size:12px;color:var(--mute);display:block}
+tr.hit td{background:rgba(63,107,92,.16);transition:.5s}
+tr.miss td{opacity:.38;transition:.5s}
+tr.chg td.c{background:rgba(184,86,47,.22)}
+tr.new td{background:rgba(63,107,92,.16)}
+td.nl{color:var(--acc);font-style:italic}
+.qb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qb .btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt{display:block;width:100%;text-align:left;margin-top:8px}
+.wd{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.wd span{border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;background:var(--bg);transition:.35s}
+.wd span.hit{background:rgba(63,107,92,.2);border-color:var(--ok)}
+.wd span.miss{opacity:.35}
+.wd span.id{font-family:ui-monospace,Menlo,monospace}
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;margin:8px 0;background:var(--bg);opacity:.5;transition:.4s}
+.step.on{opacity:1;border-color:var(--acc);background:rgba(184,86,47,.08);transform:translateX(6px)}
+.step b{font-family:Outfit;color:var(--acc);min-width:22px}
+tr.pick td{background:rgba(184,86,47,.2)}
+tr.sel{cursor:pointer}tr.sel:hover td{background:rgba(184,86,47,.1)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:10px 0}
+.sl label{font-size:13px;color:var(--mute)}
+td.cnt{background:rgba(63,107,92,.22);font-weight:600}
+.venn{display:flex;align-items:center;justify-content:center;gap:0;margin:16px 0}
+.venn svg circle{transition:.4s;fill-opacity:.55}
+.jtabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.jtabs .btn.on{background:var(--acc2);border-color:var(--acc2);color:#fff}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.m1 td{background:rgba(63,107,92,.22)}
+tr.m2 td{background:rgba(184,86,47,.16)}
+tr.dim td{opacity:.3}
+.arrowrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute);margin:4px 0;flex-wrap:wrap}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.count-badge{font:600 12px Outfit;background:var(--acc);color:#fff;padding:3px 9px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.4}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.res-row{display:flex;gap:8px;padding:6px 10px;border-radius:9px;margin:3px 0;background:var(--bg2);font-size:14px;opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.pairbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:640px){.pairbox{grid-template-columns:1fr}}
+.pairbox table{font-size:14px}
+tr.ok td{background:rgba(63,107,92,.2)}
+tr.pad td{background:rgba(214,154,74,.22)}
+tr.excl td{opacity:.38}
+tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+td.chk{position:relative}
+td.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:rgba(184,86,47,.45)}100%{background:transparent}}
+.tagok{color:var(--ok);font-weight:600}
+.tagpad{color:#b8862f;font-weight:600}
+.tagexcl{color:var(--bad);font-weight:600}
+.tagpending{color:var(--mute)}
+.res-row{opacity:0;transform:translateX(-8px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.res-row .nl{color:var(--acc);font-style:italic}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.stat div{background:var(--bg2);border-radius:12px;padding:10px 16px;text-align:center;min-width:110px}
+.stat b{display:block;font:700 22px Outfit;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mute)}
+.jhead{display:flex;align-items:center;gap:10px;margin:30px 0 6px}
+.jhead .pill{font:600 12px Outfit;letter-spacing:.06em;background:var(--acc2);color:#fff;padding:5px 12px;border-radius:99px}
+.caption{font-size:15px;background:var(--bg2);border-left:4px solid var(--acc);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.caption b{font-family:Outfit}
+.caption .ico{font-size:18px;line-height:1.3}
+.joinbox{display:flex;gap:0;align-items:stretch;margin:14px 0;overflow-x:auto;border-radius:14px}
+.jtable{flex:1 1 260px;min-width:230px}
+.jtable table{width:100%;font-size:13.5px;border-collapse:collapse}
+.jtable-head{font:700 11px Outfit;letter-spacing:.09em;text-transform:uppercase;padding:8px 12px;color:#fff}
+.jtable.left .jtable-head{background:var(--acc2);border-radius:12px 0 0 0}
+.jtable.right .jtable-head{background:var(--acc);border-radius:0 12px 0 0}
+.jtable td,.jtable th{border:1px solid var(--line);padding:6px 8px}
+.jtable.left table{border-radius:0 0 0 12px;overflow:hidden}
+.jtable.right table{border-radius:0 0 12px 0;overflow:hidden}
+.jlink{flex:0 0 78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 6px;color:var(--mute);font-size:11px;text-align:center;background:var(--bg2)}
+.jlink b{color:var(--acc);font-family:Outfit;font-size:22px}
+.jlink code{font-size:10.5px;background:var(--card);padding:3px 5px;border-radius:6px;word-break:break-word}
+.jtable.left tr.current td{box-shadow:inset 0 0 0 2px var(--acc2)}
+.jtable.right tr.current td{box-shadow:inset 0 0 0 2px var(--acc)}
+.cheat{width:100%;border-collapse:collapse;font-size:14.5px;margin:14px 0}
+.cheat th,.cheat td{border:1px solid var(--line);padding:10px 12px;text-align:center}
+.cheat th{font-family:Outfit;background:var(--bg2)}
+.cheat td:first-child,.cheat th:first-child{text-align:left;font-family:Outfit;font-weight:600}
+.cheat .y{color:var(--ok)}.cheat .n{color:var(--bad)}
+.progress{height:6px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:var(--acc);transition:.3s;width:0}
+.cheat{width:100%;border-collapse:collapse;font-size:14.5px;margin:14px 0}
+.cheat th,.cheat td{border:1px solid var(--line);padding:10px 12px;text-align:center}
+.cheat th{font-family:Outfit;background:var(--bg2)}
+.cheat td:first-child,.cheat th:first-child{text-align:left;font-family:Outfit;font-weight:600}
+.cheat .y{color:var(--ok)}.cheat .n{color:var(--bad)}
+.fntabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.fntabs .btn.on{background:var(--acc);border-color:var(--acc);color:#fff}
+td.used{background:rgba(63,107,92,.22)}
+td.skip{opacity:.35;text-decoration:line-through}
+.funnel{display:flex;flex-direction:column;align-items:center;margin:16px 0;gap:6px}
+.funnel .arrow{font-size:26px;color:var(--acc)}
+.resultbox{background:linear-gradient(135deg,var(--acc2),#2c3a33);color:#f4ead9;border-radius:16px;padding:18px 26px;text-align:center;min-width:220px}
+.resultbox b{display:block;font:700 34px Outfit}
+.resultbox .formula{font-size:13px;opacity:.85;margin-top:6px;font-family:ui-monospace,Menlo,monospace}
+.caption{font-size:15px;background:var(--bg2);border-left:4px solid var(--acc);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.caption .ico{font-size:18px}
+.lead-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;margin:4px 0;background:var(--bg2);opacity:0;transform:translateX(-10px);animation:sl .35s forwards}
+@keyframes sl{to{opacity:1;transform:none}}
+.lead-row .rank{font:700 15px Outfit;color:var(--acc);width:26px}
+.lead-row .bar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:.4s}
+.lead-row .len{font-size:12.5px;color:var(--mute);width:60px;text-align:right}
+.lead-row .title{flex:0 0 130px;font-size:13.5px}
+.cutline{border-top:2px dashed var(--bad);position:relative;margin:4px 0}
+.cutline span{position:absolute;right:0;top:-10px;font-size:11px;color:var(--bad);background:var(--card);padding:0 6px}
+.qb .btn.on{background:var(--acc2);border-color:var(--acc2);color:#fff}
+</style>
+</head>
+<body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">SQL · Lecture 4</span>
+  <h1>Aggregate Functions, <em>Sorting</em> &amp; Top-N</h1>
+  <p class="lead">Five small functions that turn a pile of rows into one meaningful number, and the sorting tricks that turn any table into a leaderboard.</p>
+  <div class="chips"><a href="#s0">The five functions</a><a href="#s1">Collapse visualizer</a><a href="#s2">Three faces of COUNT</a><a href="#s3">Combining &amp; rounding</a><a href="#s4">Top-N leaderboards</a><a href="#s5">Recap</a></div>
+</header>
+
+<section id="s0" class="rv">
+  <span class="num">01</span><h2>The five aggregate functions</h2>
+  <p>From Lecture 3, an <b>aggregate function</b> takes many values from a column and boils them down to a single value. <code>COUNT</code> was our first example. There are four close relatives, and together these five cover almost every summary statistic you'll ever need in SQL.</p>
+  <div class="scroll"><table class="cheat">
+    <tr><th>Function</th><th>What it returns</th><th>Skips NULLs?</th><th>Works on text too?</th></tr>
+    <tr><td>COUNT(col)</td><td>how many non-NULL values</td><td class="y">yes</td><td class="y">yes</td></tr>
+    <tr><td>SUM(col)</td><td>total of all values</td><td class="y">yes</td><td class="n">no</td></tr>
+    <tr><td>AVG(col)</td><td>SUM ÷ COUNT, the mean</td><td class="y">yes</td><td class="n">no</td></tr>
+    <tr><td>MIN(col)</td><td>smallest value</td><td class="y">yes</td><td class="y">yes (alphabetical)</td></tr>
+    <tr><td>MAX(col)</td><td>largest value</td><td class="y">yes</td><td class="y">yes (alphabetical)</td></tr>
+  </table></div>
+  <p>Notice the common thread: <b>every aggregate function ignores NULLs</b>. A NULL is "unknown", and an unknown value can't sensibly be added, averaged, or compared, so SQL simply leaves it out rather than guessing.</p>
+  <div class="analogy"><b>Analogy:</b> A class of 6 students sits a test; one student was absent and has no score recorded (NULL, not zero). The teacher reports the class average using only the 5 scores that exist, the total marks of those 5, the topper's score and the lowest score among those 5, and "5 students attempted this test." Nobody pretends the absent student scored a zero.</div>
+</section>
+
+<section id="s1" class="rv">
+  <span class="num">02</span><h2>Watching an aggregate collapse a column</h2>
+  <p>Our table for this lecture, a tiny movie catalogue. Notice <b>Her</b> has no <code>rental_rate</code> recorded yet:</p>
+  <div class="scroll"><table><thead><tr><th>id</th><th>title</th><th>rental_rate</th><th>length</th></tr></thead><tbody>
+    <tr><td>1</td><td>Inception</td><td>4.99</td><td>148</td></tr>
+    <tr><td>2</td><td>Titanic</td><td>3.99</td><td>195</td></tr>
+    <tr><td>3</td><td>Up</td><td>2.99</td><td>96</td></tr>
+    <tr><td>4</td><td>Her</td><td class="nl">NULL</td><td>126</td></tr>
+    <tr><td>5</td><td>Coco</td><td>1.99</td><td>105</td></tr>
+    <tr><td>6</td><td>Dune</td><td>4.99</td><td>155</td></tr>
+  </tbody></table></div>
+  <div class="card"><h3>🌀 Collapse visualizer</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 12px">Pick a function to run on <code>rental_rate</code>. Watch which cells get used and which get skipped, then see how they collapse into one number.</p>
+    <div class="fntabs" id="fntabs"></div>
+    <pre class="sql" id="fnsql"></pre>
+    <div class="scroll"><table><thead><tr><th>title</th><th>rental_rate</th></tr></thead><tbody id="fntbl"></tbody></table></div>
+    <div class="funnel"><span class="arrow">⇩ collapses to ⇩</span><div class="resultbox"><b id="fnval"></b><span class="formula" id="fnformula"></span></div></div>
+  </div>
+  <div class="rules">
+    <div><b>SUM &amp; AVG need numbers.</b> They don't make sense on text like <code>title</code>; MySQL will error or force a nonsensical conversion.</div>
+    <div><b>MIN &amp; MAX work on text too</b>, using alphabetical order: <code>MIN(title)</code> across our table returns "Coco".</div>
+    <div><b>AVG is just SUM ÷ COUNT</b> of the same non-NULL values, never dividing by the total row count.</div>
+  </div>
+  <div class="card" id="q1"></div>
+</section>
+
+<section id="s2" class="rv">
+  <span class="num">03</span><h2>The three faces of COUNT</h2>
+  <p><code>COUNT</code> is the one aggregate with more than one shape, and mixing them up is a very common bug.</p>
+  <pre class="sql">SELECT COUNT(*)                    FROM film_list;   -- every row, NULLs included
+SELECT COUNT(rental_rate)          FROM film_list;   -- only non-NULL rental_rate values
+SELECT COUNT(DISTINCT rental_rate) FROM film_list;   -- only distinct non-NULL values</pre>
+  <div class="analogy"><b>Analogy:</b> A school register. <code>COUNT(*)</code> is "how many names are on the register" (6). <code>COUNT(rental_rate)</code> is "how many students submitted a fee receipt" (5, since Her's is missing). <code>COUNT(DISTINCT rental_rate)</code> is "how many different fee amounts were paid" — since 4.99 was paid twice, that's only 4 distinct amounts.</div>
+  <div class="card"><h3>🔢 Try all three</h3>
+    <div class="qb" id="cb2"></div>
+    <div class="scroll"><table><thead><tr><th>title</th><th>rental_rate</th></tr></thead><tbody id="ct2"></tbody></table></div>
+    <div class="res" id="cres2" style="margin-top:12px"></div>
+  </div>
+  <div class="card" id="q2"></div>
+</section>
+
+<section id="s3" class="rv">
+  <span class="num">04</span><h2>Combining aggregates, and rounding them</h2>
+  <p>Nothing stops you from computing several aggregates in one query. It's just like combining ordinary columns, except every value shown is aggregated:</p>
+  <pre class="sql">SELECT
+  COUNT(*)              AS total_films,
+  COUNT(rental_rate)    AS priced_films,
+  SUM(rental_rate)      AS total_revenue_if_all_rented,
+  ROUND(AVG(rental_rate), 2) AS avg_price,
+  MIN(rental_rate)      AS cheapest,
+  MAX(rental_rate)      AS priciest
+FROM film_list;</pre>
+  <p>Remember from Lecture 2 that <code>ROUND(x, 2)</code> rounds to 2 decimal places. Wrapping an aggregate in <code>ROUND</code> is extremely common, since <code>AVG</code> often produces long decimals like <code>3.79000000000000...</code>, and giving a result a clean alias with <code>AS</code> (Lecture 3/4) makes the output easy to read.</p>
+  <div class="card"><h3>▶ Run the combined query</h3>
+    <button class="btn pri" id="runcombo">Run query</button>
+    <div class="scroll" style="margin-top:12px"><table id="combotbl"></table></div>
+  </div>
+  <div class="story"><small>Real story · AVG in the wild</small><p>Every product star-rating you've ever seen, Amazon's "4.3 out of 5", an app's rating on the Play Store, is nothing more than <code>AVG(rating)</code> over every review row, typically rounded to one decimal place. A single 1-star review barely moves that average once there are thousands of rows, which is exactly the arithmetic behind why one bad review "doesn't matter much" on a popular product but can sink a brand-new one with only 3 reviews.</p></div>
+</section>
+
+<section id="s4" class="rv">
+  <span class="num">05</span><h2>ORDER BY + LIMIT: building a Top-N leaderboard</h2>
+  <p>A hugely common real-world pattern: "top 5 longest films", "top 10 trending videos", "top 3 highest-paid employees". It's always the same two ingredients from Lecture 3, used together: <code>ORDER BY</code> to rank everything, then <code>LIMIT</code> to cut the list short.</p>
+  <pre class="sql">SELECT title, length
+FROM film_list
+ORDER BY length DESC
+LIMIT 3;</pre>
+  <p>The order matters a lot here: SQL sorts the <b>entire</b> result first, and only then slices off the top N. Asking for <code>LIMIT 3</code> <i>before</i> sorting would give you 3 random films, then sort just those three, which is not the same thing at all (and isn't even valid SQL syntax; LIMIT always comes last for exactly this reason).</p>
+  <div class="card"><h3>🏆 Leaderboard builder</h3>
+    <p style="color:var(--mute);font-size:14.5px;margin:6px 0 12px">Drag to choose N, then build the leaderboard by length, longest first.</p>
+    <div class="sl2" style="display:flex;align-items:center;gap:12px;margin:10px 0"><label>LIMIT = <b id="nval">3</b></label><input type="range" id="nslide" min="1" max="6" value="3" style="flex:1;min-width:160px"></div>
+    <pre class="sql" id="topsql"></pre>
+    <button class="btn pri" id="buildlb">Build leaderboard ▶</button> <button class="btn" id="resetlb">Reset</button>
+    <div id="lbwrap" style="margin-top:14px"></div>
+  </div>
+  <div class="story"><small>Real story · Trending lists</small><p>YouTube's "Trending" tab, Spotify's "Top 50", and Twitter's "Trending Now" are all, at their core, an <code>ORDER BY</code> on some popularity score (views, streams, mentions) computed over a time window, followed by a <code>LIMIT</code>. The ranking constantly changes simply because the underlying numbers behind ORDER BY change every few minutes.</p></div>
+  <div class="card" id="q4"></div>
+</section>
+
+<section id="s5" class="rv">
+  <span class="num">06</span><h2>Quick recap</h2>
+  <div class="card"><ul style="margin:0;padding-left:20px">
+  <li><b>COUNT, SUM, AVG, MIN, MAX</b> all ignore NULLs; SUM/AVG need numeric columns, MIN/MAX also work on text.</li>
+  <li><code>COUNT(*)</code> counts rows; <code>COUNT(col)</code> counts non-NULL values; <code>COUNT(DISTINCT col)</code> counts distinct non-NULL values.</li>
+  <li>Multiple aggregates can be combined in one SELECT, aliased with AS, and wrapped in <code>ROUND</code> for clean output.</li>
+  <li>Top-N pattern: <code>ORDER BY</code> the whole result first, <b>then</b> <code>LIMIT</code> — never the other way round.</li>
+  </ul></div>
+  <p style="color:var(--mute)">Next: Lecture 5 · GROUP BY &amp; HAVING.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.05});
+$$('.rv').forEach(e=>io.observe(e));
+const KW='SELECT|FROM|WHERE|ORDER BY|DESC|LIMIT|AS|COUNT|SUM|AVG|MIN|MAX|ROUND|DISTINCT';
+const hl=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(new RegExp("('[^']*')|(--.*$)|\\b("+KW+")\\b",'gmi'),(m,a,c,k)=>a?`<span class="s">${a}</span>`:c?`<span class="c">${c}</span>`:`<span class="k">${k}</span>`);
+const paint=()=>$$('pre.sql').forEach(p=>{if(p.dataset.h!==p.textContent){p.innerHTML=hl(p.textContent);p.dataset.h=p.textContent}});
+function mk(el,items){el.innerHTML='<h3 style="margin-bottom:4px">Your turn: guess first</h3>';items.forEach(([q,o,a,e])=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<div>${q}</div>`+o.map((t,i)=>`<button class="btn opt" data-i="${i}">${t}</button>`).join('')+'<div class="fb"></div>';d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===a,f=d.querySelector('.fb');f.className='fb '+(ok?'ok':'no');f.innerHTML=(ok?'✓ Correct. ':'✗ Not quite. ')+e});el.appendChild(d)})}
+mk($('#q1'),[["Our 6 films, one has a NULL rental_rate. What does <code>AVG(rental_rate)</code> divide by?",["6, the total rows","5, the non-NULL values","0, since one value is missing"],1,"AVG is SUM of non-NULL values ÷ COUNT of non-NULL values — 5 here, not 6."]]);
+mk($('#q2'),[["rental_rate values: 4.99, 3.99, 2.99, NULL, 1.99, 4.99. What does <code>COUNT(DISTINCT rental_rate)</code> return?",["6","5","4"],2,"Distinct non-NULL values are 4.99, 3.99, 2.99, 1.99 — four of them. NULL is excluded and 4.99 is only counted once."]]);
+mk($('#q4'),[["Why does <code>LIMIT</code> always come after <code>ORDER BY</code> in a query, never before?",["It's just a style convention","LIMIT needs the full result sorted first, or it would cut off random rows","LIMIT is faster when written first"],1,"SQL sorts the complete result, then slices the top N — sorting after limiting would rank the wrong, incomplete set of rows."]]);
+
+// ---- Collapse visualizer ----
+const FILMS=[['Inception',4.99,148],['Titanic',3.99,195],['Up',2.99,96],['Her',null,126],['Coco',1.99,105],['Dune',4.99,155]];
+const FN={
+ COUNT:{sql:'SELECT COUNT(rental_rate) FROM film_list;',calc:vals=>[vals.length,`COUNT of ${vals.length} non-NULL values = ${vals.length}`]},
+ SUM:{sql:'SELECT SUM(rental_rate) FROM film_list;',calc:vals=>{const s=vals.reduce((a,b)=>a+b,0);return[s.toFixed(2),vals.join(' + ')+' = '+s.toFixed(2)]}},
+ AVG:{sql:'SELECT AVG(rental_rate) FROM film_list;',calc:vals=>{const s=vals.reduce((a,b)=>a+b,0),av=s/vals.length;return[av.toFixed(2),'('+vals.join(' + ')+') / '+vals.length+' = '+av.toFixed(2)]}},
+ MIN:{sql:'SELECT MIN(rental_rate) FROM film_list;',calc:vals=>[Math.min(...vals).toFixed(2),'smallest of {'+vals.join(', ')+'}']},
+ MAX:{sql:'SELECT MAX(rental_rate) FROM film_list;',calc:vals=>[Math.max(...vals).toFixed(2),'largest of {'+vals.join(', ')+'}']}
+};
+function fnRun(name){
+  $$('#fntabs .btn').forEach(b=>b.classList.toggle('on',b.textContent===name));
+  $('#fnsql').textContent=FN[name].sql;
+  const vals=[];
+  $('#fntbl').innerHTML=FILMS.map(f=>{
+    if(f[1]===null) return `<tr><td>${f[0]}</td><td class="skip">NULL — skipped</td></tr>`;
+    vals.push(f[1]);
+    return `<tr><td>${f[0]}</td><td class="used">${f[1].toFixed(2)}</td></tr>`;
+  }).join('');
+  const[val,formula]=FN[name].calc(vals);
+  $('#fnval').textContent=val;
+  $('#fnformula').textContent=formula;
+  paint();
+}
+Object.keys(FN).forEach(name=>{const b=document.createElement('button');b.className='btn';b.textContent=name;b.onclick=()=>fnRun(name);$('#fntabs').appendChild(b)});
+fnRun('SUM');
+
+// ---- COUNT lab ----
+function countRun(mode){
+  $$('#cb2 .btn').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+  const seen=new Set();
+  $('#ct2').innerHTML=FILMS.map(f=>{
+    if(mode==='star') return `<tr class="used"><td>${f[0]}</td><td>${f[1]===null?'<span class="nl">NULL</span>':f[1].toFixed(2)}</td></tr>`;
+    if(f[1]===null) return `<tr><td>${f[0]}</td><td class="skip">NULL — skipped</td></tr>`;
+    if(mode==='distinct'){const dup=seen.has(f[1]);seen.add(f[1]);return `<tr class="${dup?'':'used'}"><td>${f[0]}</td><td class="${dup?'skip':''}">${f[1].toFixed(2)}${dup?' — repeat, skipped':''}</td></tr>`}
+    return `<tr class="used"><td>${f[0]}</td><td>${f[1].toFixed(2)}</td></tr>`;
+  }).join('');
+  const n=mode==='star'?FILMS.length:mode==='col'?FILMS.filter(f=>f[1]!==null).length:new Set(FILMS.filter(f=>f[1]!==null).map(f=>f[1])).size;
+  const label={star:'COUNT(*)',col:'COUNT(rental_rate)',distinct:'COUNT(DISTINCT rental_rate)'}[mode];
+  $('#cres2').innerHTML=`<strong>${label} = ${n}</strong>`;
+}
+[['star','COUNT(*)'],['col','COUNT(rental_rate)'],['distinct','COUNT(DISTINCT rental_rate)']].forEach(([m,t])=>{const b=document.createElement('button');b.className='btn';b.dataset.m=m;b.textContent=t;b.onclick=()=>countRun(m);$('#cb2').appendChild(b)});
+countRun('star');
+
+// ---- combined query ----
+$('#runcombo').onclick=()=>{
+  const vals=FILMS.filter(f=>f[1]!==null).map(f=>f[1]);
+  const total=FILMS.length,priced=vals.length,sum=vals.reduce((a,b)=>a+b,0),avg=sum/vals.length,mn=Math.min(...vals),mx=Math.max(...vals);
+  $('#combotbl').innerHTML=`<thead><tr><th>total_films</th><th>priced_films</th><th>total_revenue_if_all_rented</th><th>avg_price</th><th>cheapest</th><th>priciest</th></tr></thead><tbody><tr class="res-row"><td>${total}</td><td>${priced}</td><td>${sum.toFixed(2)}</td><td>${avg.toFixed(2)}</td><td>${mn.toFixed(2)}</td><td>${mx.toFixed(2)}</td></tr></tbody>`;
+};
+
+// ---- leaderboard ----
+function tsql(){$('#topsql').textContent=`SELECT title, length\nFROM film_list\nORDER BY length DESC\nLIMIT ${$('#nslide').value};`;paint()}
+$('#nslide').oninput=()=>{$('#nval').textContent=$('#nslide').value;tsql()};
+tsql();
+$('#buildlb').onclick=()=>{
+  const n=+$('#nslide').value;
+  const sorted=[...FILMS].sort((a,b)=>b[2]-a[2]);
+  const maxLen=sorted[0][2];
+  const wrap=$('#lbwrap');wrap.innerHTML='';
+  sorted.forEach((f,i)=>{
+    setTimeout(()=>{
+      if(i===n){wrap.insertAdjacentHTML('beforeend','<div class="cutline"><span>LIMIT cuts here</span></div>')}
+      const row=document.createElement('div');row.className='lead-row';
+      row.innerHTML=`<span class="rank">#${i+1}</span><span class="title">${f[0]}</span><span class="bar" style="width:${(f[2]/maxLen*160).toFixed(0)}px"></span><span class="len">${f[2]} min</span>`;
+      if(i>=n)row.style.opacity='.3';
+      wrap.appendChild(row);
+    },i*220);
+  });
+};
+$('#resetlb').onclick=()=>{$('#lbwrap').innerHTML=''};
+paint();
+</script>
+</body>
+</html>
