@@ -27,7 +27,7 @@ const CATALOG = {
       title: "Create, Read, Update, Delete",
       blurb: "Four operations run almost every app you have ever used.",
       assignments: [
-        "Keys and identification",
+        "Build & Fill the Table",
         "Foreign keys and integrity",
         "Mixed practice"
       ]
