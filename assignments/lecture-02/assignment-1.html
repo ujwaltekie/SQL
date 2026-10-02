@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assignment 1 · Lecture 2 · Build &amp; Fill the Table</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.2;margin:0}
+main{max-width:820px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:56px 0 12px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(30px,5.4vw,42px);margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--mute);font-size:17px;max-width:640px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0 6px}
+.pill{display:inline-block;font:700 11.5px Outfit;padding:6px 14px;border-radius:99px;letter-spacing:.07em;text-transform:uppercase}
+.pill.med{background:rgba(214,154,74,.2);color:#8a6a2a}
+.pill.hard{background:rgba(178,58,58,.16);color:var(--bad)}
+.pill.time{background:var(--bg2);color:var(--mute)}
+.concepts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.concepts span{font-size:12.5px;border:1px solid var(--line);padding:5px 11px;border-radius:99px;color:var(--mute);background:var(--card)}
+section{margin-top:42px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(22px,4vw,28px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);background:var(--bg2)}
+td.nl{color:var(--acc);font-style:italic}
+.taskcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:18px 0;box-shadow:var(--sh)}
+.taskcard h3{font-size:18px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.taskcard h3 .tn{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px Outfit;flex:0 0 auto}
+.exp{background:var(--bg2);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14.5px}
+.exp b{font-family:Outfit;color:var(--acc2);display:block;margin-bottom:6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+details{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+details summary{cursor:pointer;font:600 14px Outfit;color:var(--acc);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary:before{content:'\1F4A1  '}
+details[open] summary{margin-bottom:8px}
+.footnote{color:var(--mute);font-size:13.5px;margin-top:8px}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.btn{font:600 13px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;cursor:pointer}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+</style></head><body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">Lecture 2 · Assignment 1</span>
+  <h1>Build &amp; Fill the Table</h1>
+  <div class="meta"><span class="pill med">Medium</span><span class="pill time">⏱ 25–30 min</span></div>
+  <p class="lead">Turn a written specification into a working CREATE TABLE statement, insert valid data respecting every constraint, then deliberately break one and fix it.</p>
+  <div class="concepts"><span>CREATE TABLE</span><span>Constraints</span><span>INSERT</span></div>
+</header>
+<section class="rv"><span class="num">DATASET</span><h2>Working data</h2><p>You've been asked to design an <code>interns</code> table with this exact specification:</p>
+<ul>
+<li><code>intern_id</code> — integer, auto-incrementing, PRIMARY KEY</li>
+<li><code>fullName</code> — text up to 60 characters, cannot be empty</li>
+<li><code>email</code> — text up to 100 characters, cannot be empty, no two interns may share one</li>
+<li><code>stipend</code> — a decimal number, must be between 0 and 100000</li>
+<li><code>mentorId</code> — integer, may be left unknown</li>
+<li><code>joinedOn</code> — a timestamp that automatically records the moment the row is created</li>
+<li><code>isRemote</code> — true/false, defaults to TRUE if not specified</li>
+</ul>
+</section>
+<section class="rv"><span class="num">TASKS</span><h2>Your tasks</h2><div class="taskcard"><h3><span class="tn">1</span>Task 1</h3>
+    <div>Write the full <code>CREATE TABLE interns (...)</code> statement satisfying every rule in the spec above (right datatype, NOT NULL, UNIQUE, CHECK, DEFAULT, PRIMARY KEY, AUTO_INCREMENT where needed).</div>
+    
+    <details><summary>Hint</summary><div>Constraints go right after a column's datatype. AUTO_INCREMENT columns still need PRIMARY KEY declared separately at the end.</div></details>
+    </div><div class="taskcard"><h3><span class="tn">2</span>Task 2</h3>
+    <div>Write a single <code>INSERT</code> statement (with column names) adding 3 valid interns at once. For at least one of them, explicitly insert <code>NULL</code> for <code>mentorId</code>, and let <code>isRemote</code> take its default by leaving it out of the column list.</div>
+    
+    <details><summary>Hint</summary><div>Leaving a column out of the column list entirely is how you let it take its DEFAULT — you don't need to type the word DEFAULT for that.</div></details>
+    </div><div class="taskcard"><h3><span class="tn">3</span>Task 3</h3>
+    <div>Write an INSERT that would <b>fail</b> against your schema on purpose. State exactly which constraint it violates and why.</div>
+    
+    <details><summary>Hint</summary><div>Try reusing an email from Task 2, or pass a stipend outside the 0–100000 CHECK range, or leave fullName out entirely.</div></details>
+    </div><div class="taskcard"><h3><span class="tn">4</span>Task 4</h3>
+    <div>Rewrite Task 3's failing INSERT so it succeeds, changing as little as possible.</div>
+    
+    <details><summary>Hint</summary><div>You only need to fix the one value that broke the constraint you identified.</div></details>
+    </div></section>
+
+</main>
+<script>
+const $=s=>document.querySelector(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.06});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+</script>
+</body></html>
