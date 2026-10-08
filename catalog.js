@@ -48,8 +48,7 @@ const CATALOG = {
       blurb: "Five small functions that turn a pile of rows into one meaningful number, and the sorting tricks that turn any table into a leaderboard.",
       assignments: [
         "Keys and identification",
-        "Foreign keys and integrity",
-        "Mixed practice"
+        "Create, Fill & Filter"
       ]
     },
       {
