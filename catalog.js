@@ -26,7 +26,8 @@ const CATALOG = {
       blurb: "Four operations run almost every app you have ever used.",
       assignments: [
         "Build & Fill the Table",
-        "Create, Fill & Filter"
+        "Create, Fill & Filter",
+         "The Logical Operators" 
       ]
     },
       {
