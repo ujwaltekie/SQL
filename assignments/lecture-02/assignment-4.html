@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assignment 4 · Lecture 2 · Library Books: Filter, Update &amp; Delete</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.2;margin:0}
+main{max-width:820px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:56px 0 12px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(30px,5.4vw,42px);margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--mute);font-size:17px;max-width:640px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0 6px}
+.pill{display:inline-block;font:700 11.5px Outfit;padding:6px 14px;border-radius:99px;letter-spacing:.07em;text-transform:uppercase}
+.pill.med{background:rgba(214,154,74,.2);color:#8a6a2a}
+.pill.hard{background:rgba(178,58,58,.16);color:var(--bad)}
+.pill.time{background:var(--bg2);color:var(--mute)}
+.concepts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.concepts span{font-size:12.5px;border:1px solid var(--line);padding:5px 11px;border-radius:99px;color:var(--mute);background:var(--card)}
+section{margin-top:42px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(22px,4vw,28px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);background:var(--bg2)}
+td.nl{color:var(--acc);font-style:italic}
+.taskcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:18px 0;box-shadow:var(--sh)}
+.taskcard h3{font-size:18px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.taskcard h3 .tn{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px Outfit;flex:0 0 auto}
+.exp{background:var(--bg2);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14.5px}
+.exp b{font-family:Outfit;color:var(--acc2);display:block;margin-bottom:6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+details{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+details summary{cursor:pointer;font:600 14px Outfit;color:var(--acc);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary:before{content:'\1F4A1  '}
+details[open] summary{margin-bottom:8px}
+.footnote{color:var(--mute);font-size:13.5px;margin-top:8px}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.btn{font:600 13px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;cursor:pointer}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+</style></head><body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">Lecture 2 · Assignment 4</span>
+  <h1>Library Books: Filter, Update &amp; Delete</h1>
+  <div class="meta"><span class="pill med">Medium</span><span class="pill time">⏱ 35–40 min</span></div>
+  <p class="lead">A school library catalogue to practise everything from Lecture 2: filtering with comparison and logical operators, IN and BETWEEN, then changing and removing rows.</p>
+  <div class="concepts"><span>WHERE</span><span>AND / OR / NOT</span><span>IN / NOT IN</span><span>BETWEEN</span><span>UPDATE</span><span>DELETE</span></div>
+</header>
+<section class="rv"><span class="num">DATASET</span><h2>Working data</h2><p>A school library keeps its catalogue in a table called <code>LibraryBooks</code>. Set it up first by running the two statements below in your MySQL, then complete the questions.</p><p><b>1. Create the table</b></p><pre class='sql'>CREATE TABLE LibraryBooks (
+    BookID INT PRIMARY KEY,
+    BookName VARCHAR(50),
+    Category VARCHAR(30),
+    Price DECIMAL(8,2),
+    Copies INT,
+    Publisher VARCHAR(50)
+);</pre><p><b>2. Insert the data</b></p><pre class='sql'>INSERT INTO LibraryBooks VALUES
+(1, 'Harry Potter', 'Fantasy', 450.00, 12, 'Bright Books'),
+(2, 'Maths Guide', 'Education', 250.00, 20, 'Learn Well'),
+(3, 'Space Explorer', 'Science', 350.00, 8, 'Bright Books'),
+(4, 'Animal World', 'Nature', 180.00, 15, 'Green Press'),
+(5, 'English Grammar', 'Education', 300.00, 10, 'Learn Well'),
+(6, 'Mystery Island', 'Adventure', 400.00, 6, 'Star Publishers'),
+(7, 'Ocean Life', 'Science', 220.00, 18, 'Green Press'),
+(8, 'Magic Forest', 'Fantasy', 320.00, 9, 'Star Publishers'),
+(9, 'World History', 'Education', 500.00, 5, 'Bright Books'),
+(10, 'Wild Animals', 'Nature', 280.00, 14, 'Green Press'),
+(11, 'Treasure Hunt', 'Adventure', 150.00, 25, 'Star Publishers'),
+(12, 'Solar System', 'Science', 420.00, 7, 'Bright Books'),
+(13, 'Fairy Tales', 'Fantasy', 200.00, 16, 'Learn Well'),
+(14, 'Grammar Basics', 'Education', 180.00, 22, 'Green Press'),
+(15, 'Mountain Adventure', 'Adventure', 350.00, 11, 'Star Publishers');</pre><p>This is what the table should contain once the insert has run:</p><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>2</td><td>Maths Guide</td><td>Education</td><td>250.00</td><td>20</td><td>Learn Well</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>5</td><td>English Grammar</td><td>Education</td><td>300.00</td><td>10</td><td>Learn Well</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr><tr><td>14</td><td>Grammar Basics</td><td>Education</td><td>180.00</td><td>22</td><td>Green Press</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div><div class='card'><p style='margin:0'><b>Order matters:</b> Sections A to D only read data, so run them first on the full 15 rows. Sections E and F change the table permanently, and the delete in Task 15 depends on the update from Task 11, so do those last and in the order given.</p></div></section>
+<section class="rv"><span class="num">TASKS</span><h2>Your tasks</h2><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>A. WHERE and comparison operators</h3><div class="taskcard"><h3><span class="tn">1</span>Task 1</h3>
+    <div>Display the books that cost <b>more than ₹300</b>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">2</span>Task 2</h3>
+    <div>Display the books whose price is <b>not equal to ₹200</b>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>2</td><td>Maths Guide</td><td>Education</td><td>250.00</td><td>20</td><td>Learn Well</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>5</td><td>English Grammar</td><td>Education</td><td>300.00</td><td>10</td><td>Learn Well</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>14</td><td>Grammar Basics</td><td>Education</td><td>180.00</td><td>22</td><td>Green Press</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>B. AND, OR and NOT</h3><div class="taskcard"><h3><span class="tn">3</span>Task 3</h3>
+    <div>Display the books that cost more than ₹200 <b>AND</b> have more than 10 copies.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>2</td><td>Maths Guide</td><td>Education</td><td>250.00</td><td>20</td><td>Learn Well</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">4</span>Task 4</h3>
+    <div>Display the books in the <code>Science</code> category <b>OR</b> the <code>Fantasy</code> category.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">5</span>Task 5</h3>
+    <div>Display the books that are <b>NOT</b> in the <code>Education</code> category.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>C. IN and NOT IN</h3><div class="taskcard"><h3><span class="tn">6</span>Task 6</h3>
+    <div>Display the books belonging to <code>Science</code>, <code>Fantasy</code> or <code>Adventure</code> using <code>IN</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">7</span>Task 7</h3>
+    <div>Display the books published by <code>Bright Books</code> or <code>Green Press</code> using <code>IN</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>14</td><td>Grammar Basics</td><td>Education</td><td>180.00</td><td>22</td><td>Green Press</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">8</span>Task 8</h3>
+    <div>Display the books whose categories are <b>not</b> <code>Nature</code> or <code>Education</code> using <code>NOT IN</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>D. BETWEEN and NOT BETWEEN</h3><div class="taskcard"><h3><span class="tn">9</span>Task 9</h3>
+    <div>Display the books with prices <b>between ₹200 and ₹400</b>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>2</td><td>Maths Guide</td><td>Education</td><td>250.00</td><td>20</td><td>Learn Well</td></tr><tr><td>3</td><td>Space Explorer</td><td>Science</td><td>350.00</td><td>8</td><td>Bright Books</td></tr><tr><td>5</td><td>English Grammar</td><td>Education</td><td>300.00</td><td>10</td><td>Learn Well</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>7</td><td>Ocean Life</td><td>Science</td><td>220.00</td><td>18</td><td>Green Press</td></tr><tr><td>8</td><td>Magic Forest</td><td>Fantasy</td><td>320.00</td><td>9</td><td>Star Publishers</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr><tr><td>13</td><td>Fairy Tales</td><td>Fantasy</td><td>200.00</td><td>16</td><td>Learn Well</td></tr><tr><td>15</td><td>Mountain Adventure</td><td>Adventure</td><td>350.00</td><td>11</td><td>Star Publishers</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">10</span>Task 10</h3>
+    <div>Display the books whose prices are <b>NOT BETWEEN ₹200 and ₹350</b>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>450.00</td><td>12</td><td>Bright Books</td></tr><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>6</td><td>Mystery Island</td><td>Adventure</td><td>400.00</td><td>6</td><td>Star Publishers</td></tr><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Star Publishers</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr><tr><td>14</td><td>Grammar Basics</td><td>Education</td><td>180.00</td><td>22</td><td>Green Press</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>E. UPDATE</h3><div class="taskcard"><h3><span class="tn">11</span>Task 11</h3>
+    <div>Change the price of <code>Harry Potter</code> to ₹500.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>1</td><td>Harry Potter</td><td>Fantasy</td><td>500.00</td><td>12</td><td>Bright Books</td></tr></tbody></table></div><p class='footnote'>The Harry Potter row as it should look after the update.</p></div>
+    </div><div class="taskcard"><h3><span class="tn">12</span>Task 12</h3>
+    <div>Change the publisher of <code>Treasure Hunt</code> to <code>Bright Books</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Bright Books</td></tr></tbody></table></div><p class='footnote'>The Treasure Hunt row as it should look after the update.</p></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>F. DELETE</h3><div class="taskcard"><h3><span class="tn">13</span>Task 13</h3>
+    <div>Delete the book whose <code>BookID</code> is 11.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>11</td><td>Treasure Hunt</td><td>Adventure</td><td>150.00</td><td>25</td><td>Bright Books</td></tr></tbody></table></div><p class='footnote'>The row that should be removed.</p></div>
+    </div><div class="taskcard"><h3><span class="tn">14</span>Task 14</h3>
+    <div>Delete all the books in the <code>Nature</code> category.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>4</td><td>Animal World</td><td>Nature</td><td>180.00</td><td>15</td><td>Green Press</td></tr><tr><td>10</td><td>Wild Animals</td><td>Nature</td><td>280.00</td><td>14</td><td>Green Press</td></tr></tbody></table></div><p class='footnote'>The rows that should be removed.</p></div>
+    </div><div class="taskcard"><h3><span class="tn">15</span>Task 15</h3>
+    <div>Delete the books that cost <b>more than ₹400</b> and have <b>fewer than 10 copies</b>. (Run this after Task 11, so Harry Potter is already ₹500.)</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>BookID</th><th>BookName</th><th>Category</th><th>Price</th><th>Copies</th><th>Publisher</th></tr></thead><tbody><tr><td>9</td><td>World History</td><td>Education</td><td>500.00</td><td>5</td><td>Bright Books</td></tr><tr><td>12</td><td>Solar System</td><td>Science</td><td>420.00</td><td>7</td><td>Bright Books</td></tr></tbody></table></div><p class='footnote'>The rows that should be removed. Harry Potter costs more than ₹400 but has 12 copies, so it stays.</p></div>
+    </div></section>
+
+</main>
+<script>
+const $=s=>document.querySelector(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.06});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+</script>
+</body></html>
