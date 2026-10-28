@@ -27,7 +27,8 @@ const CATALOG = {
       assignments: [
         "Build & Fill the Table",
         "Create, Fill & Filter",
-         "The Logical Operators" 
+         "The Logical Operators",
+         "Library Books: Filter, Update & Delete"
       ]
     },
       {
