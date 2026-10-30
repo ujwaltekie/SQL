@@ -36,6 +36,7 @@ const CATALOG = {
       title: "Clean up, search, sort and combine",
       blurb: "Three ways to remove data, pattern-matching with LIKE, counting, ordering, paging, and finally joining two tables into one answer.",
       assignments: [
+         "Movie Ratings 🎬"
        
       ]
     },
