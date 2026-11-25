@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assignment 5 · Lecture 6 · Inner Join: Food Delivery Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.2;margin:0}
+main{max-width:820px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:56px 0 12px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(30px,5.4vw,42px);margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--mute);font-size:17px;max-width:640px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0 6px}
+.pill{display:inline-block;font:700 11.5px Outfit;padding:6px 14px;border-radius:99px;letter-spacing:.07em;text-transform:uppercase}
+.pill.med{background:rgba(214,154,74,.2);color:#8a6a2a}
+.pill.hard{background:rgba(178,58,58,.16);color:var(--bad)}
+.pill.time{background:var(--bg2);color:var(--mute)}
+.concepts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.concepts span{font-size:12.5px;border:1px solid var(--line);padding:5px 11px;border-radius:99px;color:var(--mute);background:var(--card)}
+section{margin-top:42px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(22px,4vw,28px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);background:var(--bg2)}
+td.nl{color:var(--acc);font-style:italic}
+.taskcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:18px 0;box-shadow:var(--sh)}
+.taskcard h3{font-size:18px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.taskcard h3 .tn{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px Outfit;flex:0 0 auto}
+.exp{background:var(--bg2);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14.5px}
+.exp b{font-family:Outfit;color:var(--acc2);display:block;margin-bottom:6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+details{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+details summary{cursor:pointer;font:600 14px Outfit;color:var(--acc);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary:before{content:'\1F4A1  '}
+details[open] summary{margin-bottom:8px}
+.footnote{color:var(--mute);font-size:13.5px;margin-top:8px}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.btn{font:600 13px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;cursor:pointer}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+</style></head><body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">Lecture 6 · Assignment 5</span>
+  <h1>Inner Join: Food Delivery Orders</h1>
+  <div class="meta"><span class="pill hard">Hard</span><span class="pill time">⏱ 50–55 min</span></div>
+  <p class="lead">Three linked tables from a food-delivery app. Chain INNER JOINs across all of them, add conditions, and summarise the results with grouping.</p>
+  <div class="concepts"><span>INNER JOIN</span><span>Three-table join</span><span>Conditions in ON / WHERE</span><span>BETWEEN</span><span>GROUP BY / HAVING</span></div>
+</header>
+<section class="rv"><span class="num">DATASET</span><h2>Working data</h2><p>A food-delivery app stores its data in three linked tables. <code>Orders</code> holds two foreign keys: <code>CustomerID</code> points to <code>Customers</code> and <code>RestaurantID</code> points to <code>Restaurants</code>. Set the tables up, then answer every question using <b>INNER JOIN</b>.</p><p><b>1. Create the tables</b></p><pre class='sql'>CREATE TABLE Restaurants (
+    RestaurantID INT PRIMARY KEY,
+    RestaurantName VARCHAR(40),
+    City VARCHAR(30),
+    Cuisine VARCHAR(30)
+);
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(40),
+    City VARCHAR(30)
+);
+
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT,
+    RestaurantID INT,
+    Amount DECIMAL(8,2),
+    OrderDate DATE,
+    Status VARCHAR(20),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID),
+    FOREIGN KEY (RestaurantID) REFERENCES Restaurants(RestaurantID)
+);</pre><p><b>2. Insert the data</b></p><pre class='sql'>INSERT INTO Restaurants VALUES
+(1, 'Spice Route', 'Pune', 'Indian'),
+(2, 'Pasta Palace', 'Mumbai', 'Italian'),
+(3, 'Dragon Wok', 'Pune', 'Chinese'),
+(4, 'Taco Town', 'Delhi', 'Mexican'),
+(5, 'Green Bowl', 'Mumbai', 'Healthy');
+
+INSERT INTO Customers VALUES
+(1, 'Aisha', 'Pune'),
+(2, 'Rohan', 'Mumbai'),
+(3, 'Meera', 'Pune'),
+(4, 'Kabir', 'Delhi'),
+(5, 'Tara', 'Mumbai');
+
+INSERT INTO Orders VALUES
+(101, 1, 1, 450.00, '2024-03-01', 'Delivered'),
+(102, 2, 2, 720.00, '2024-03-02', 'Delivered'),
+(103, 1, 3, 380.00, '2024-03-03', 'Cancelled'),
+(104, 3, 1, 520.00, '2024-03-04', 'Delivered'),
+(105, 4, 4, 610.00, '2024-03-05', 'Delivered'),
+(106, 2, 2, 340.00, '2024-03-06', 'Delivered'),
+(107, 3, 3, 290.00, '2024-03-07', 'Delivered'),
+(108, 1, 1, 810.00, '2024-03-08', 'Delivered'),
+(109, 4, 2, 450.00, '2024-03-09', 'Cancelled'),
+(110, 2, 3, 560.00, '2024-03-10', 'Delivered'),
+(111, 3, 4, 230.00, '2024-03-11', 'Delivered'),
+(112, 1, 2, 660.00, '2024-03-12', 'Delivered');</pre><p>The tables should contain:</p><div class='scroll'><table><thead><tr><th>RestaurantID</th><th>RestaurantName</th><th>City</th><th>Cuisine</th></tr></thead><tbody><tr><td>1</td><td>Spice Route</td><td>Pune</td><td>Indian</td></tr><tr><td>2</td><td>Pasta Palace</td><td>Mumbai</td><td>Italian</td></tr><tr><td>3</td><td>Dragon Wok</td><td>Pune</td><td>Chinese</td></tr><tr><td>4</td><td>Taco Town</td><td>Delhi</td><td>Mexican</td></tr><tr><td>5</td><td>Green Bowl</td><td>Mumbai</td><td>Healthy</td></tr></tbody></table></div><div class='scroll'><table><thead><tr><th>CustomerID</th><th>CustomerName</th><th>City</th></tr></thead><tbody><tr><td>1</td><td>Aisha</td><td>Pune</td></tr><tr><td>2</td><td>Rohan</td><td>Mumbai</td></tr><tr><td>3</td><td>Meera</td><td>Pune</td></tr><tr><td>4</td><td>Kabir</td><td>Delhi</td></tr><tr><td>5</td><td>Tara</td><td>Mumbai</td></tr></tbody></table></div><div class='scroll'><table><thead><tr><th>OrderID</th><th>CustomerID</th><th>RestaurantID</th><th>Amount</th><th>OrderDate</th><th>Status</th></tr></thead><tbody><tr><td>101</td><td>1</td><td>1</td><td>450.00</td><td>2024-03-01</td><td>Delivered</td></tr><tr><td>102</td><td>2</td><td>2</td><td>720.00</td><td>2024-03-02</td><td>Delivered</td></tr><tr><td>103</td><td>1</td><td>3</td><td>380.00</td><td>2024-03-03</td><td>Cancelled</td></tr><tr><td>104</td><td>3</td><td>1</td><td>520.00</td><td>2024-03-04</td><td>Delivered</td></tr><tr><td>105</td><td>4</td><td>4</td><td>610.00</td><td>2024-03-05</td><td>Delivered</td></tr><tr><td>106</td><td>2</td><td>2</td><td>340.00</td><td>2024-03-06</td><td>Delivered</td></tr><tr><td>107</td><td>3</td><td>3</td><td>290.00</td><td>2024-03-07</td><td>Delivered</td></tr><tr><td>108</td><td>1</td><td>1</td><td>810.00</td><td>2024-03-08</td><td>Delivered</td></tr><tr><td>109</td><td>4</td><td>2</td><td>450.00</td><td>2024-03-09</td><td>Cancelled</td></tr><tr><td>110</td><td>2</td><td>3</td><td>560.00</td><td>2024-03-10</td><td>Delivered</td></tr><tr><td>111</td><td>3</td><td>4</td><td>230.00</td><td>2024-03-11</td><td>Delivered</td></tr><tr><td>112</td><td>1</td><td>2</td><td>660.00</td><td>2024-03-12</td><td>Delivered</td></tr></tbody></table></div><p class='footnote'>Tara has never placed an order, and Green Bowl has never received one. All questions are read-only SELECTs.</p></section>
+<section class="rv"><span class="num">TASKS</span><h2>Your tasks</h2><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>A. Joining two tables</h3><div class="taskcard"><h3><span class="tn">1</span>Task 1</h3>
+    <div>Display each order's <code>OrderID</code>, the <code>RestaurantName</code> it was placed at, and the <code>Amount</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>OrderID</th><th>RestaurantName</th><th>Amount</th></tr></thead><tbody><tr><td>101</td><td>Spice Route</td><td>450.00</td></tr><tr><td>102</td><td>Pasta Palace</td><td>720.00</td></tr><tr><td>103</td><td>Dragon Wok</td><td>380.00</td></tr><tr><td>104</td><td>Spice Route</td><td>520.00</td></tr><tr><td>105</td><td>Taco Town</td><td>610.00</td></tr><tr><td>106</td><td>Pasta Palace</td><td>340.00</td></tr><tr><td>107</td><td>Dragon Wok</td><td>290.00</td></tr><tr><td>108</td><td>Spice Route</td><td>810.00</td></tr><tr><td>109</td><td>Pasta Palace</td><td>450.00</td></tr><tr><td>110</td><td>Dragon Wok</td><td>560.00</td></tr><tr><td>111</td><td>Taco Town</td><td>230.00</td></tr><tr><td>112</td><td>Pasta Palace</td><td>660.00</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">2</span>Task 2</h3>
+    <div>Display each order's <code>CustomerName</code>, <code>Amount</code> and <code>OrderDate</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>CustomerName</th><th>Amount</th><th>OrderDate</th></tr></thead><tbody><tr><td>Aisha</td><td>450.00</td><td>2024-03-01</td></tr><tr><td>Rohan</td><td>720.00</td><td>2024-03-02</td></tr><tr><td>Aisha</td><td>380.00</td><td>2024-03-03</td></tr><tr><td>Meera</td><td>520.00</td><td>2024-03-04</td></tr><tr><td>Kabir</td><td>610.00</td><td>2024-03-05</td></tr><tr><td>Rohan</td><td>340.00</td><td>2024-03-06</td></tr><tr><td>Meera</td><td>290.00</td><td>2024-03-07</td></tr><tr><td>Aisha</td><td>810.00</td><td>2024-03-08</td></tr><tr><td>Kabir</td><td>450.00</td><td>2024-03-09</td></tr><tr><td>Rohan</td><td>560.00</td><td>2024-03-10</td></tr><tr><td>Meera</td><td>230.00</td><td>2024-03-11</td></tr><tr><td>Aisha</td><td>660.00</td><td>2024-03-12</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>B. Joining three tables</h3><div class="taskcard"><h3><span class="tn">3</span>Task 3</h3>
+    <div>Display <code>OrderID</code>, <code>CustomerName</code>, <code>RestaurantName</code>, <code>Amount</code> and <code>Status</code> for every order, by joining all three tables.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>OrderID</th><th>CustomerName</th><th>RestaurantName</th><th>Amount</th><th>Status</th></tr></thead><tbody><tr><td>101</td><td>Aisha</td><td>Spice Route</td><td>450.00</td><td>Delivered</td></tr><tr><td>102</td><td>Rohan</td><td>Pasta Palace</td><td>720.00</td><td>Delivered</td></tr><tr><td>103</td><td>Aisha</td><td>Dragon Wok</td><td>380.00</td><td>Cancelled</td></tr><tr><td>104</td><td>Meera</td><td>Spice Route</td><td>520.00</td><td>Delivered</td></tr><tr><td>105</td><td>Kabir</td><td>Taco Town</td><td>610.00</td><td>Delivered</td></tr><tr><td>106</td><td>Rohan</td><td>Pasta Palace</td><td>340.00</td><td>Delivered</td></tr><tr><td>107</td><td>Meera</td><td>Dragon Wok</td><td>290.00</td><td>Delivered</td></tr><tr><td>108</td><td>Aisha</td><td>Spice Route</td><td>810.00</td><td>Delivered</td></tr><tr><td>109</td><td>Kabir</td><td>Pasta Palace</td><td>450.00</td><td>Cancelled</td></tr><tr><td>110</td><td>Rohan</td><td>Dragon Wok</td><td>560.00</td><td>Delivered</td></tr><tr><td>111</td><td>Meera</td><td>Taco Town</td><td>230.00</td><td>Delivered</td></tr><tr><td>112</td><td>Aisha</td><td>Pasta Palace</td><td>660.00</td><td>Delivered</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">4</span>Task 4</h3>
+    <div>Display the <code>CustomerName</code>, <code>RestaurantName</code> and <code>Amount</code> of only the <b>Delivered</b> orders, ordered by amount from highest to lowest.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>CustomerName</th><th>RestaurantName</th><th>Amount</th></tr></thead><tbody><tr><td>Aisha</td><td>Spice Route</td><td>810.00</td></tr><tr><td>Rohan</td><td>Pasta Palace</td><td>720.00</td></tr><tr><td>Aisha</td><td>Pasta Palace</td><td>660.00</td></tr><tr><td>Kabir</td><td>Taco Town</td><td>610.00</td></tr><tr><td>Rohan</td><td>Dragon Wok</td><td>560.00</td></tr><tr><td>Meera</td><td>Spice Route</td><td>520.00</td></tr><tr><td>Aisha</td><td>Spice Route</td><td>450.00</td></tr><tr><td>Rohan</td><td>Pasta Palace</td><td>340.00</td></tr><tr><td>Meera</td><td>Dragon Wok</td><td>290.00</td></tr><tr><td>Meera</td><td>Taco Town</td><td>230.00</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>C. Conditions in a join</h3><div class="taskcard"><h3><span class="tn">5</span>Task 5</h3>
+    <div>Display the <b>Delivered</b> orders where the <b>customer's city is the same as the restaurant's city</b>. Show <code>OrderID</code>, <code>CustomerName</code>, <code>RestaurantName</code> and the shared city.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>OrderID</th><th>CustomerName</th><th>RestaurantName</th><th>City</th></tr></thead><tbody><tr><td>101</td><td>Aisha</td><td>Spice Route</td><td>Pune</td></tr><tr><td>102</td><td>Rohan</td><td>Pasta Palace</td><td>Mumbai</td></tr><tr><td>104</td><td>Meera</td><td>Spice Route</td><td>Pune</td></tr><tr><td>105</td><td>Kabir</td><td>Taco Town</td><td>Delhi</td></tr><tr><td>106</td><td>Rohan</td><td>Pasta Palace</td><td>Mumbai</td></tr><tr><td>107</td><td>Meera</td><td>Dragon Wok</td><td>Pune</td></tr><tr><td>108</td><td>Aisha</td><td>Spice Route</td><td>Pune</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">6</span>Task 6</h3>
+    <div>Display the <b>Delivered</b> orders placed <b>between 2024-03-03 and 2024-03-09</b> (inclusive). Show <code>OrderID</code>, <code>CustomerName</code>, <code>RestaurantName</code>, <code>OrderDate</code> and <code>Amount</code>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>OrderID</th><th>CustomerName</th><th>RestaurantName</th><th>OrderDate</th><th>Amount</th></tr></thead><tbody><tr><td>104</td><td>Meera</td><td>Spice Route</td><td>2024-03-04</td><td>520.00</td></tr><tr><td>105</td><td>Kabir</td><td>Taco Town</td><td>2024-03-05</td><td>610.00</td></tr><tr><td>106</td><td>Rohan</td><td>Pasta Palace</td><td>2024-03-06</td><td>340.00</td></tr><tr><td>107</td><td>Meera</td><td>Dragon Wok</td><td>2024-03-07</td><td>290.00</td></tr><tr><td>108</td><td>Aisha</td><td>Spice Route</td><td>2024-03-08</td><td>810.00</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>D. Joins with aggregates</h3><div class="taskcard"><h3><span class="tn">7</span>Task 7</h3>
+    <div>Display each customer's <code>CustomerName</code> with the <b>total amount of their Delivered orders</b>.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>CustomerName</th><th>TotalSpent</th></tr></thead><tbody><tr><td>Aisha</td><td>1920.00</td></tr><tr><td>Rohan</td><td>1620.00</td></tr><tr><td>Meera</td><td>1040.00</td></tr><tr><td>Kabir</td><td>610.00</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">8</span>Task 8</h3>
+    <div>Display each restaurant's <code>RestaurantName</code> with its number of <b>Delivered</b> orders, only for restaurants with <b>at least 3</b> delivered orders.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>RestaurantName</th><th>DeliveredOrders</th></tr></thead><tbody><tr><td>Spice Route</td><td>3</td></tr><tr><td>Pasta Palace</td><td>3</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">9</span>Task 9</h3>
+    <div>Display the <b>top 3 customers</b> by total Delivered spend, with their <code>CustomerName</code> and total amount.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>CustomerName</th><th>TotalSpent</th></tr></thead><tbody><tr><td>Aisha</td><td>1920.00</td></tr><tr><td>Rohan</td><td>1620.00</td></tr><tr><td>Meera</td><td>1040.00</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>E. Think about it</h3><div class="taskcard"><h3><span class="tn">10</span>Task 10</h3>
+    <div>Which customer and which restaurant never appear in <b>any</b> of the results above? Explain why an INNER JOIN leaves them out, and name the type of join you would need if you wanted them to show up.</div>
+    
+    </div></section>
+
+</main>
+<script>
+const $=s=>document.querySelector(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.06});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+</script>
+</body></html>
