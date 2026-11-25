@@ -60,7 +60,7 @@ const CATALOG = {
       id: "lecture-06",
       title: "Inner, Left, Right and Full Joins",
       blurb: "our ways to combine two tables, and exactly which rows survive each one.",
-      assignments: [
+      assignments: ["Inner Join: Food Delivery Orders"
         
       ]
     },
