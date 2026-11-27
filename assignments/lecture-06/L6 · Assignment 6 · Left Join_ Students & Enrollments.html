@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assignment 6 · Lecture 6 · Left Join: Students &amp; Enrollments</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ede1;--bg2:#ece2d0;--card:#fbf7ef;--ink:#2b2620;--mute:#7a6f60;--line:#dfd2bb;--acc:#b8562f;--acc2:#3f6b5c;--ok:#3f6b5c;--bad:#b23a3a;--sh:0 10px 30px -14px rgba(90,60,20,.3);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}}
+:root[data-theme="dark"]{--bg:#1e1a15;--bg2:#27221b;--card:#2b251e;--ink:#f0e7d8;--mute:#a89c88;--line:#41382b;--acc:#e08a5e;--acc2:#7fb09d;--ok:#7fb09d;--bad:#e07a7a;--sh:0 10px 30px -14px #000}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Plus Jakarta Sans',system-ui,sans-serif;background-image:radial-gradient(900px 500px at 90% -10%,rgba(184,86,47,.13),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(63,107,92,.11),transparent 60%)}
+h1,h2,h3{font-family:Outfit,sans-serif;line-height:1.2;margin:0}
+main{max-width:820px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:56px 0 12px}
+.tag{display:inline-block;font:600 12px Outfit;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(184,86,47,.1);padding:6px 12px;border-radius:99px}
+h1{font-size:clamp(30px,5.4vw,42px);margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--mute);font-size:17px;max-width:640px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0 6px}
+.pill{display:inline-block;font:700 11.5px Outfit;padding:6px 14px;border-radius:99px;letter-spacing:.07em;text-transform:uppercase}
+.pill.med{background:rgba(214,154,74,.2);color:#8a6a2a}
+.pill.hard{background:rgba(178,58,58,.16);color:var(--bad)}
+.pill.time{background:var(--bg2);color:var(--mute)}
+.concepts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.concepts span{font-size:12.5px;border:1px solid var(--line);padding:5px 11px;border-radius:99px;color:var(--mute);background:var(--card)}
+section{margin-top:42px}
+.num{font:600 13px Outfit;color:var(--acc2);letter-spacing:.12em}
+h2{font-size:clamp(22px,4vw,28px);margin:6px 0 14px;font-weight:600}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--sh);margin:18px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--bg2);padding:2px 6px;border-radius:6px}
+pre{margin:12px 0;background:#2a2620;color:#efe6d4;border-radius:14px;padding:14px 16px;overflow-x:auto;font:13.5px/1.65 ui-monospace,Menlo,monospace}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 12px Outfit;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);background:var(--bg2)}
+td.nl{color:var(--acc);font-style:italic}
+.taskcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:18px 0;box-shadow:var(--sh)}
+.taskcard h3{font-size:18px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.taskcard h3 .tn{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px Outfit;flex:0 0 auto}
+.exp{background:var(--bg2);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14.5px}
+.exp b{font-family:Outfit;color:var(--acc2);display:block;margin-bottom:6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+details{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+details summary{cursor:pointer;font:600 14px Outfit;color:var(--acc);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary:before{content:'\1F4A1  '}
+details[open] summary{margin-bottom:8px}
+.footnote{color:var(--mute);font-size:13.5px;margin-top:8px}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+.tt{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:5}
+.btn{font:600 13px Outfit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;cursor:pointer}
+.analogy{border-left:4px solid var(--acc);background:linear-gradient(90deg,rgba(184,86,47,.09),transparent);padding:14px 18px;border-radius:0 14px 14px 0;margin:18px 0}
+.analogy b{font-family:Outfit;color:var(--acc)}
+</style></head><body>
+<div class="tt"><button class="btn" id="th">◐ Theme</button></div>
+<main>
+<header class="hero rv">
+  <span class="tag">Lecture 6 · Assignment 6</span>
+  <h1>Left Join: Students &amp; Enrollments</h1>
+  <div class="meta"><span class="pill med">Medium</span><span class="pill time">⏱ 45 min</span></div>
+  <p class="lead">A learning platform where some students have enrolled in several courses and some in none. Use LEFT JOIN to keep every student, find the ones with no match, and count correctly.</p>
+  <div class="concepts"><span>LEFT JOIN</span><span>IS NULL</span><span>ON vs WHERE</span><span>COUNT with joins</span><span>GROUP BY / HAVING</span></div>
+</header>
+<section class="rv"><span class="num">DATASET</span><h2>Working data</h2><p>An online learning platform stores its learners in <code>Students</code> and their course sign-ups in <code>Enrollments</code>. A student can have many enrollments, or none. Set up the tables, then answer every question using <b>LEFT JOIN</b> with <code>Students</code> as the <b>left</b> table.</p><p><b>1. Create the tables</b></p><pre class='sql'>CREATE TABLE Students (
+    StudentID INT PRIMARY KEY,
+    StudentName VARCHAR(40),
+    City VARCHAR(30)
+);
+
+CREATE TABLE Enrollments (
+    EnrollmentID INT PRIMARY KEY,
+    StudentID INT,
+    CourseName VARCHAR(40),
+    Fee DECIMAL(8,2),
+    Status VARCHAR(20),
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+);</pre><p><b>2. Insert the data</b></p><pre class='sql'>INSERT INTO Students VALUES
+(1, 'Anika', 'Pune'),
+(2, 'Bhavesh', 'Mumbai'),
+(3, 'Chitra', 'Delhi'),
+(4, 'Dhruv', 'Pune'),
+(5, 'Esha', 'Mumbai'),
+(6, 'Farhan', 'Delhi'),
+(7, 'Gauri', 'Pune');
+
+INSERT INTO Enrollments VALUES
+(1, 1, 'SQL Basics', 1500.00, 'Active'),
+(2, 1, 'Python Starter', 1800.00, 'Completed'),
+(3, 2, 'SQL Basics', 1500.00, 'Completed'),
+(4, 3, 'Web Design', 2200.00, 'Active'),
+(5, 3, 'SQL Basics', 1500.00, 'Dropped'),
+(6, 3, 'Python Starter', 1800.00, 'Active'),
+(7, 5, 'Web Design', 2200.00, 'Completed'),
+(8, 6, 'SQL Basics', 1500.00, 'Active'),
+(9, 2, 'Data Viz', 2000.00, 'Active');</pre><p>The tables should contain:</p><div class='scroll'><table><thead><tr><th>StudentID</th><th>StudentName</th><th>City</th></tr></thead><tbody><tr><td>1</td><td>Anika</td><td>Pune</td></tr><tr><td>2</td><td>Bhavesh</td><td>Mumbai</td></tr><tr><td>3</td><td>Chitra</td><td>Delhi</td></tr><tr><td>4</td><td>Dhruv</td><td>Pune</td></tr><tr><td>5</td><td>Esha</td><td>Mumbai</td></tr><tr><td>6</td><td>Farhan</td><td>Delhi</td></tr><tr><td>7</td><td>Gauri</td><td>Pune</td></tr></tbody></table></div><div class='scroll'><table><thead><tr><th>EnrollmentID</th><th>StudentID</th><th>CourseName</th><th>Fee</th><th>Status</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>SQL Basics</td><td>1500.00</td><td>Active</td></tr><tr><td>2</td><td>1</td><td>Python Starter</td><td>1800.00</td><td>Completed</td></tr><tr><td>3</td><td>2</td><td>SQL Basics</td><td>1500.00</td><td>Completed</td></tr><tr><td>4</td><td>3</td><td>Web Design</td><td>2200.00</td><td>Active</td></tr><tr><td>5</td><td>3</td><td>SQL Basics</td><td>1500.00</td><td>Dropped</td></tr><tr><td>6</td><td>3</td><td>Python Starter</td><td>1800.00</td><td>Active</td></tr><tr><td>7</td><td>5</td><td>Web Design</td><td>2200.00</td><td>Completed</td></tr><tr><td>8</td><td>6</td><td>SQL Basics</td><td>1500.00</td><td>Active</td></tr><tr><td>9</td><td>2</td><td>Data Viz</td><td>2000.00</td><td>Active</td></tr></tbody></table></div><p class='footnote'>Dhruv and Gauri have never enrolled in anything. All questions are read-only SELECTs.</p><div class='card'><p style='margin:0'><b>Keep in mind:</b> a LEFT JOIN keeps <i>every</i> row of the left table. Where there is no match, the columns from the right table come back as NULL.</p></div></section>
+<section class="rv"><span class="num">TASKS</span><h2>Your tasks</h2><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>A. Basic LEFT JOIN</h3><div class="taskcard"><h3><span class="tn">1</span>Task 1</h3>
+    <div>Display every student's <code>StudentName</code> with the <code>CourseName</code> of each course they enrolled in. Every student must appear, even those with no enrollment.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>CourseName</th></tr></thead><tbody><tr><td>Anika</td><td>SQL Basics</td></tr><tr><td>Anika</td><td>Python Starter</td></tr><tr><td>Bhavesh</td><td>SQL Basics</td></tr><tr><td>Bhavesh</td><td>Data Viz</td></tr><tr><td>Chitra</td><td>Web Design</td></tr><tr><td>Chitra</td><td>SQL Basics</td></tr><tr><td>Chitra</td><td>Python Starter</td></tr><tr><td>Dhruv</td><td><span class="nl">NULL</span></td></tr><tr><td>Esha</td><td>Web Design</td></tr><tr><td>Farhan</td><td>SQL Basics</td></tr><tr><td>Gauri</td><td><span class="nl">NULL</span></td></tr></tbody></table></div><p class='footnote'>Row order may differ on your machine.</p></div>
+    </div><div class="taskcard"><h3><span class="tn">2</span>Task 2</h3>
+    <div>Display <code>StudentName</code>, <code>City</code>, <code>CourseName</code> and <code>Status</code> for every student, including those who have not enrolled.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>City</th><th>CourseName</th><th>Status</th></tr></thead><tbody><tr><td>Anika</td><td>Pune</td><td>SQL Basics</td><td>Active</td></tr><tr><td>Anika</td><td>Pune</td><td>Python Starter</td><td>Completed</td></tr><tr><td>Bhavesh</td><td>Mumbai</td><td>SQL Basics</td><td>Completed</td></tr><tr><td>Bhavesh</td><td>Mumbai</td><td>Data Viz</td><td>Active</td></tr><tr><td>Chitra</td><td>Delhi</td><td>Web Design</td><td>Active</td></tr><tr><td>Chitra</td><td>Delhi</td><td>SQL Basics</td><td>Dropped</td></tr><tr><td>Chitra</td><td>Delhi</td><td>Python Starter</td><td>Active</td></tr><tr><td>Dhruv</td><td>Pune</td><td><span class="nl">NULL</span></td><td><span class="nl">NULL</span></td></tr><tr><td>Esha</td><td>Mumbai</td><td>Web Design</td><td>Completed</td></tr><tr><td>Farhan</td><td>Delhi</td><td>SQL Basics</td><td>Active</td></tr><tr><td>Gauri</td><td>Pune</td><td><span class="nl">NULL</span></td><td><span class="nl">NULL</span></td></tr></tbody></table></div><p class='footnote'>Row order may differ on your machine.</p></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>B. Finding the unmatched rows</h3><div class="taskcard"><h3><span class="tn">3</span>Task 3</h3>
+    <div>Display the students who have <b>not enrolled in any course</b>, with their <code>StudentName</code> and <code>City</code>. Use a LEFT JOIN and check for NULL on the right side.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>City</th></tr></thead><tbody><tr><td>Dhruv</td><td>Pune</td></tr><tr><td>Gauri</td><td>Pune</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">4</span>Task 4</h3>
+    <div>Display the students from <code>Pune</code> with their <code>CourseName</code>, including Pune students who have no courses.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>CourseName</th></tr></thead><tbody><tr><td>Anika</td><td>SQL Basics</td></tr><tr><td>Anika</td><td>Python Starter</td></tr><tr><td>Dhruv</td><td><span class="nl">NULL</span></td></tr><tr><td>Gauri</td><td><span class="nl">NULL</span></td></tr></tbody></table></div><p class='footnote'>Row order may differ on your machine.</p></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>C. Conditions: ON versus WHERE</h3><div class="taskcard"><h3><span class="tn">5</span>Task 5</h3>
+    <div>Display <b>every student</b> with only their <code>Active</code> courses. Students with no Active course must still appear, with NULL. Put the status condition in the <code>ON</code> clause.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>CourseName</th></tr></thead><tbody><tr><td>Anika</td><td>SQL Basics</td></tr><tr><td>Bhavesh</td><td>Data Viz</td></tr><tr><td>Chitra</td><td>Web Design</td></tr><tr><td>Chitra</td><td>Python Starter</td></tr><tr><td>Dhruv</td><td><span class="nl">NULL</span></td></tr><tr><td>Esha</td><td><span class="nl">NULL</span></td></tr><tr><td>Farhan</td><td>SQL Basics</td></tr><tr><td>Gauri</td><td><span class="nl">NULL</span></td></tr></tbody></table></div><p class='footnote'>Row order may differ on your machine.</p></div>
+    </div><div class="taskcard"><h3><span class="tn">6</span>Task 6</h3>
+    <div>Now write the same query but put <code>Status = 'Active'</code> in the <code>WHERE</code> clause instead. Compare with Task 5: which students disappear, and why?</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>CourseName</th></tr></thead><tbody><tr><td>Anika</td><td>SQL Basics</td></tr><tr><td>Bhavesh</td><td>Data Viz</td></tr><tr><td>Chitra</td><td>Web Design</td></tr><tr><td>Chitra</td><td>Python Starter</td></tr><tr><td>Farhan</td><td>SQL Basics</td></tr></tbody></table></div><p class='footnote'>Row order may differ on your machine.</p></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>D. LEFT JOIN with aggregates</h3><div class="taskcard"><h3><span class="tn">7</span>Task 7</h3>
+    <div>Display each student's <code>StudentName</code> with their <b>number of enrollments</b>, using <code>COUNT(EnrollmentID)</code>. Students with none should show 0.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>TotalEnrollments</th></tr></thead><tbody><tr><td>Anika</td><td>2</td></tr><tr><td>Bhavesh</td><td>2</td></tr><tr><td>Chitra</td><td>3</td></tr><tr><td>Dhruv</td><td>0</td></tr><tr><td>Esha</td><td>1</td></tr><tr><td>Farhan</td><td>1</td></tr><tr><td>Gauri</td><td>0</td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">8</span>Task 8</h3>
+    <div>Display each student's <code>StudentName</code> with the <b>total fee</b> of all their enrollments. What do students with no enrollment show?</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>TotalFee</th></tr></thead><tbody><tr><td>Anika</td><td>3300.00</td></tr><tr><td>Bhavesh</td><td>3500.00</td></tr><tr><td>Chitra</td><td>5500.00</td></tr><tr><td>Dhruv</td><td><span class="nl">NULL</span></td></tr><tr><td>Esha</td><td>2200.00</td></tr><tr><td>Farhan</td><td>1500.00</td></tr><tr><td>Gauri</td><td><span class="nl">NULL</span></td></tr></tbody></table></div></div>
+    </div><div class="taskcard"><h3><span class="tn">9</span>Task 9</h3>
+    <div>Display the students who have <b>fewer than 2 enrollments</b> (including 0), with their <code>StudentName</code> and enrollment count.</div>
+    <div class="exp"><b>Expected output</b><div class='scroll'><table><thead><tr><th>StudentName</th><th>TotalEnrollments</th></tr></thead><tbody><tr><td>Dhruv</td><td>0</td></tr><tr><td>Esha</td><td>1</td></tr><tr><td>Farhan</td><td>1</td></tr><tr><td>Gauri</td><td>0</td></tr></tbody></table></div></div>
+    </div><h3 style='margin:30px 0 4px;font-size:20px;color:var(--acc2)'>E. Think about it</h3><div class="taskcard"><h3><span class="tn">10</span>Task 10</h3>
+    <div>For Dhruv, what would <code>COUNT(*)</code> return in Task 7 instead of <code>COUNT(EnrollmentID)</code>? Explain why the two differ.</div>
+    
+    </div></section>
+
+</main>
+<script>
+const $=s=>document.querySelector(s);
+$('#th').onclick=()=>{const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const c=r.dataset.theme||(d?'dark':'light');r.dataset.theme=c==='dark'?'light':'dark'};
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.06});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+</script>
+</body></html>
